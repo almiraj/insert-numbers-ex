@@ -3,8 +3,8 @@ import * as vscode from "vscode";
 type SequenceFormatter = (index: number) => string;
 
 type DateShape =
-  | { kind: "ymd-slash"; yearWidth: number; monthWidth: number; dayWidth: number }
-  | { kind: "mdy-slash"; yearWidth: number; monthWidth: number; dayWidth: number }
+  | { kind: "ymd-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: "/" | "-" }
+  | { kind: "mdy-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: "/" | "-" }
   | { kind: "ym-slash"; yearWidth: number; monthWidth: number; separator: "/" | "-" }
   | { kind: "ymd-compact" }
   | { kind: "ym-compact" };
@@ -12,7 +12,7 @@ type DateShape =
 type TimeShape = { withSeconds: boolean; hourWidth: number; minuteWidth: number; secondWidth?: number };
 
 type DateTimeShape = {
-  date: Extract<DateShape, { kind: "ymd-slash" }>;
+  date: Extract<DateShape, { kind: "ymd-separated" }>;
   time: Required<TimeShape>;
   separator: string;
 };
@@ -168,10 +168,11 @@ function createDateSequenceFormatter(source: string): SequenceFormatter | undefi
 
       const start = new Date(Date.UTC(year, month - 1, day));
       const shape: DateShape = {
-        kind: "ymd-slash",
+        kind: "ymd-separated",
         yearWidth: part1.length,
         monthWidth: part2.length,
-        dayWidth: part3.length
+        dayWidth: part3.length,
+        separator: "/"
       };
       return (index: number) => formatDate(addDays(start, index), shape);
     }
@@ -186,10 +187,11 @@ function createDateSequenceFormatter(source: string): SequenceFormatter | undefi
 
       const start = new Date(Date.UTC(year, month - 1, day));
       const shape: DateShape = {
-        kind: "mdy-slash",
+        kind: "mdy-separated",
         yearWidth: part3.length,
         monthWidth: part1.length,
-        dayWidth: part2.length
+        dayWidth: part2.length,
+        separator: "/"
       };
       return (index: number) => formatDate(addDays(start, index), shape);
     }
@@ -232,14 +234,14 @@ function createTimeSequenceFormatter(source: string): SequenceFormatter | undefi
       return undefined;
     }
 
-    const start = hour * 3600 + minute * 60 + second;
+    const start = new Date(Date.UTC(1970, 0, 1, hour, minute, second));
     const shape: TimeShape = {
       withSeconds: true,
       hourWidth: hourText.length,
       minuteWidth: minuteText.length,
       secondWidth: secondText.length
     };
-    return (index: number) => formatTime((start + index) % 86400, shape);
+    return (index: number) => formatTime(addSeconds(start, index), shape);
   }
 
   const withoutSeconds = /^(\d{1,2}):(\d{1,2})$/u.exec(source);
@@ -254,13 +256,13 @@ function createTimeSequenceFormatter(source: string): SequenceFormatter | undefi
     return undefined;
   }
 
-  const start = hour * 60 + minute;
+  const start = new Date(Date.UTC(1970, 0, 1, hour, minute, 0));
   const shape: TimeShape = {
     withSeconds: false,
     hourWidth: hourText.length,
     minuteWidth: minuteText.length
   };
-  return (index: number) => formatTime((start + index) % 1440, shape);
+  return (index: number) => formatTime(addMinutes(start, index), shape);
 }
 
 function createDateTimeSequenceFormatter(source: string): SequenceFormatter | undefined {
@@ -284,10 +286,11 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
   const start = Date.UTC(year, month - 1, day, hour, minute, second);
   const shape: DateTimeShape = {
     date: {
-      kind: "ymd-slash",
+      kind: "ymd-separated",
       yearWidth: yearText.length,
       monthWidth: monthText.length,
-      dayWidth: dayText.length
+      dayWidth: dayText.length,
+      separator: dateSeparator as "/" | "-"
     },
     time: {
       withSeconds: true,
@@ -300,16 +303,7 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
 
   return (index: number) => {
     const value = new Date(start + index * 1000);
-    const dateText =
-      dateSeparator === "-"
-        ? `${String(value.getUTCFullYear()).padStart(shape.date.yearWidth, "0")}-${String(
-            value.getUTCMonth() + 1
-          ).padStart(shape.date.monthWidth, "0")}-${String(value.getUTCDate()).padStart(shape.date.dayWidth, "0")}`
-        : formatDate(value, shape.date);
-    return `${dateText}${shape.separator}${formatTime(
-      value.getUTCHours() * 3600 + value.getUTCMinutes() * 60 + value.getUTCSeconds(),
-      shape.time
-    )}`;
+    return formatDateTime(value, shape);
   };
 }
 
@@ -356,22 +350,32 @@ function addMonths(date: Date, amount: number): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + amount, 1));
 }
 
+function addMinutes(date: Date, amount: number): Date {
+  return new Date(date.getTime() + amount * 60 * 1000);
+}
+
+function addSeconds(date: Date, amount: number): Date {
+  return new Date(date.getTime() + amount * 1000);
+}
+
 function formatDate(date: Date, shape: DateShape): string {
   const year = String(date.getUTCFullYear());
   const month = String(date.getUTCMonth() + 1);
   const day = String(date.getUTCDate());
 
   switch (shape.kind) {
-    case "ymd-slash":
-      return `${year.padStart(shape.yearWidth, "0")}/${month.padStart(shape.monthWidth, "0")}/${day.padStart(
-        shape.dayWidth,
-        "0"
-      )}`;
-    case "mdy-slash":
-      return `${month.padStart(shape.monthWidth, "0")}/${day.padStart(shape.dayWidth, "0")}/${year.padStart(
-        shape.yearWidth,
-        "0"
-      )}`;
+    case "ymd-separated":
+      return [
+        year.padStart(shape.yearWidth, "0"),
+        month.padStart(shape.monthWidth, "0"),
+        day.padStart(shape.dayWidth, "0")
+      ].join(shape.separator);
+    case "mdy-separated":
+      return [
+        month.padStart(shape.monthWidth, "0"),
+        day.padStart(shape.dayWidth, "0"),
+        year.padStart(shape.yearWidth, "0")
+      ].join(shape.separator);
     case "ym-slash":
       return `${year.padStart(shape.yearWidth, "0")}${shape.separator}${month.padStart(shape.monthWidth, "0")}`;
     case "ymd-compact":
@@ -381,22 +385,20 @@ function formatDate(date: Date, shape: DateShape): string {
   }
 }
 
-function formatTime(totalSeconds: number, shape: TimeShape): string {
+function formatDateTime(date: Date, shape: DateTimeShape): string {
+  return formatDate(date, shape.date) + shape.separator + formatTime(date, shape.time);
+}
+
+function formatTime(date: Date, shape: TimeShape): string {
+  const hour = String(date.getUTCHours()).padStart(shape.hourWidth, "0");
+  const minute = String(date.getUTCMinutes()).padStart(shape.minuteWidth, "0");
+
   if (shape.withSeconds) {
-    const normalized = ((totalSeconds % 86400) + 86400) % 86400;
-    const hour = Math.floor(normalized / 3600);
-    const minute = Math.floor((normalized % 3600) / 60);
-    const second = normalized % 60;
-    return `${String(hour).padStart(shape.hourWidth, "0")}:${String(minute).padStart(
-      shape.minuteWidth,
-      "0"
-    )}:${String(second).padStart(shape.secondWidth ?? 2, "0")}`;
+    const second = String(date.getUTCSeconds()).padStart(shape.secondWidth ?? 2, "0");
+    return `${hour}:${minute}:${second}`;
   }
 
-  const normalized = ((totalSeconds % 1440) + 1440) % 1440;
-  const hour = Math.floor(normalized / 60);
-  const minute = normalized % 60;
-  return `${String(hour).padStart(shape.hourWidth, "0")}:${String(minute).padStart(shape.minuteWidth, "0")}`;
+  return `${hour}:${minute}`;
 }
 
 function isValidDate(year: number, month: number, day: number): boolean {
