@@ -5,6 +5,7 @@ type SequenceFormatter = (index: number) => string;
 type DateShape =
   | { kind: "ymd-slash"; yearWidth: number; monthWidth: number; dayWidth: number }
   | { kind: "mdy-slash"; yearWidth: number; monthWidth: number; dayWidth: number }
+  | { kind: "ym-slash"; yearWidth: number; monthWidth: number; separator: "/" | "-" }
   | { kind: "ymd-compact" }
   | { kind: "ym-compact" };
 
@@ -23,15 +24,6 @@ const PREVIEW_DECORATION = vscode.window.createTextEditorDecorationType({
   },
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
-
-const CHARACTER_SETS = [
-  "abcdefghijklmnopqrstuvwxyz",
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-  "０１２３４５６７８９",
-  "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
-  "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
-  "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
-];
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(PREVIEW_DECORATION);
@@ -141,9 +133,28 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
 
 /**
  * Creates a date sequence formatter.
- * Supports patterns like `2026/04/29`, `2026/4/29`, `20260429`, `04/29/2026`, `4/29/2026` and `202604`.
+ * Supports patterns like `2026/04/29`, `2026/4/29`, `20260429`, `04/29/2026`, `4/29/2026`, `2026/04` and `202604`.
  */
 function createDateSequenceFormatter(source: string): SequenceFormatter | undefined {
+  const yearMonthMatch = /^(\d{4})\/(\d{1,2})$/u.exec(source);
+  if (yearMonthMatch && Number(yearMonthMatch[1]) >= 1970) {
+    const [, yearText, monthText] = yearMonthMatch;
+    const year = Number(yearText);
+    const month = Number(monthText);
+    if (month < 1 || month > 12) {
+      return undefined;
+    }
+
+    const start = new Date(Date.UTC(year, month - 1, 1));
+    const shape: DateShape = {
+      kind: "ym-slash",
+      yearWidth: yearText.length,
+      monthWidth: 2,
+      separator: "/"
+    };
+    return (index: number) => formatDate(addMonths(start, index), shape);
+  }
+
   const slashMatch = /^(\d{1,4})\/(\d{1,2})\/(\d{1,4})$/u.exec(source);
   if (slashMatch) {
     const [, part1, part2, part3] = slashMatch;
@@ -253,12 +264,12 @@ function createTimeSequenceFormatter(source: string): SequenceFormatter | undefi
 }
 
 function createDateTimeSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const match = /^(\d{4})\/(\d{1,2})\/(\d{1,2})(\s+)(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
+  const match = /^(\d{4})([\/-])(\d{1,2})\2(\d{1,2})(\s+)(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
   if (!match) {
     return undefined;
   }
 
-  const [, yearText, monthText, dayText, separator, hourText, minuteText, secondText] = match;
+  const [, yearText, dateSeparator, monthText, dayText, separator, hourText, minuteText, secondText] = match;
   const year = Number(yearText);
   const month = Number(monthText);
   const day = Number(dayText);
@@ -289,7 +300,13 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
 
   return (index: number) => {
     const value = new Date(start + index * 1000);
-    return `${formatDate(value, shape.date)}${shape.separator}${formatTime(
+    const dateText =
+      dateSeparator === "-"
+        ? `${String(value.getUTCFullYear()).padStart(shape.date.yearWidth, "0")}-${String(
+            value.getUTCMonth() + 1
+          ).padStart(shape.date.monthWidth, "0")}-${String(value.getUTCDate()).padStart(shape.date.dayWidth, "0")}`
+        : formatDate(value, shape.date);
+    return `${dateText}${shape.separator}${formatTime(
       value.getUTCHours() * 3600 + value.getUTCMinutes() * 60 + value.getUTCSeconds(),
       shape.time
     )}`;
@@ -301,13 +318,21 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
  * Supports patterns like `a`, `１`, `あ` and `ア`.
  */
 function createCharacterSequenceFormatter(source: string): SequenceFormatter | undefined {
+  const characterSets = [
+    "abcdefghijklmnopqrstuvwxyz",
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "０１２３４５６７８９",
+    "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
+    "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
+    "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
+  ];
   const chars = [...source];
   for (let index = 0; index < chars.length; index += 1) {
     const char = chars[index];
     const prefix = chars.slice(0, index).join("");
     const suffix = chars.slice(index + 1).join("");
 
-    for (const set of CHARACTER_SETS) {
+    for (const set of characterSets) {
       const members = [...set];
       const startIndex = members.indexOf(char);
       if (startIndex >= 0) {
@@ -347,6 +372,8 @@ function formatDate(date: Date, shape: DateShape): string {
         shape.yearWidth,
         "0"
       )}`;
+    case "ym-slash":
+      return `${year.padStart(shape.yearWidth, "0")}${shape.separator}${month.padStart(shape.monthWidth, "0")}`;
     case "ymd-compact":
       return `${year.padStart(4, "0")}${month.padStart(2, "0")}${day.padStart(2, "0")}`;
     case "ym-compact":
