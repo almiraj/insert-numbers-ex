@@ -1,0 +1,45 @@
+{
+  "name": "insert-numbers",
+  "displayName": "Insert Numbers",
+  "description": "An extension to insert increasing numbers.",
+  "version": "1.0.0",
+  "publisher": "almiraj",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:insert-numbers.insertNumbers"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "insert-numbers.insertNumbers",
+        "title": "Insert Numbers"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "insert-numbers.insertNumbers",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.11",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.6.3",
+    "vsce": "^2.15.0"
+  }
+}
