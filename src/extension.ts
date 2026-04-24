@@ -114,12 +114,12 @@ function detectSequenceFormatter(source: string): SequenceFormatter | undefined 
  * Supports patterns like `1`, `1_` and `01`.
  */
 function createNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const match = /^(.*?)(\d+)([^\d]*)$/su.exec(source);
+  const match = /^(\d+)([^\d]*)$/su.exec(source);
   if (!match) {
     return undefined;
   }
 
-  const [, prefix, digits, suffix] = match;
+  const [, digits, suffix] = match;
   const start = Number.parseInt(digits, 10);
   const width = digits.length;
   const padded = digits.startsWith("0") && width > 1;
@@ -127,7 +127,7 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
   return (index: number) => {
     const value = String(start + index);
     const formatted = padded ? value.padStart(width, "0") : value;
-    return `${prefix}${formatted}${suffix}`;
+    return `${formatted}${suffix}`;
   };
 }
 
@@ -327,23 +327,20 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
     "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
   ];
   const chars = [...source];
-  for (let index = 0; index < chars.length; index += 1) {
-    const char = chars[index];
-    const prefix = chars.slice(0, index).join("");
-    const suffix = chars.slice(index + 1).join("");
+  const [char = "", ...rest] = chars;
+  const suffix = rest.join("");
 
-    for (const set of characterSets) {
-      const members = [...set];
-      const startIndex = members.indexOf(char);
-      if (startIndex >= 0) {
-        return (offset: number) => `${prefix}${members[startIndex + offset] ?? ""}${suffix}`;
-      }
+  for (const set of characterSets) {
+    const members = [...set];
+    const startIndex = members.indexOf(char);
+    if (startIndex >= 0) {
+      return (offset: number) => `${members[startIndex + offset] ?? ""}${suffix}`;
     }
+  }
 
-    const codePoint = char.codePointAt(0);
-    if (codePoint !== undefined && /\p{L}|\p{N}/u.test(char)) {
-      return (offset: number) => `${prefix}${String.fromCodePoint(codePoint + offset)}${suffix}`;
-    }
+  const codePoint = char.codePointAt(0);
+  if (codePoint !== undefined && /\p{L}|\p{N}/u.test(char)) {
+    return (offset: number) => `${String.fromCodePoint(codePoint + offset)}${suffix}`;
   }
   return undefined;
 }
