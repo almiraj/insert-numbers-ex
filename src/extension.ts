@@ -16,55 +16,6 @@ type DateTimeShape = {
   separator: string;
 };
 
-const HALF_WIDTH_KATAKANA = [
-  "ｱ",
-  "ｲ",
-  "ｳ",
-  "ｴ",
-  "ｵ",
-  "ｶ",
-  "ｷ",
-  "ｸ",
-  "ｹ",
-  "ｺ",
-  "ｻ",
-  "ｼ",
-  "ｽ",
-  "ｾ",
-  "ｿ",
-  "ﾀ",
-  "ﾁ",
-  "ﾂ",
-  "ﾃ",
-  "ﾄ",
-  "ﾅ",
-  "ﾆ",
-  "ﾇ",
-  "ﾈ",
-  "ﾉ",
-  "ﾊ",
-  "ﾋ",
-  "ﾌ",
-  "ﾍ",
-  "ﾎ",
-  "ﾏ",
-  "ﾐ",
-  "ﾑ",
-  "ﾒ",
-  "ﾓ",
-  "ﾔ",
-  "ﾕ",
-  "ﾖ",
-  "ﾗ",
-  "ﾘ",
-  "ﾙ",
-  "ﾚ",
-  "ﾛ",
-  "ﾜ",
-  "ｦ",
-  "ﾝ"
-];
-
 const PREVIEW_DECORATION = vscode.window.createTextEditorDecorationType({
   after: {
     color: new vscode.ThemeColor("editorCodeLens.foreground"),
@@ -79,7 +30,7 @@ const CHARACTER_SETS = [
   "０１２３４５６７８９",
   "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
   "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
-  HALF_WIDTH_KATAKANA.join("")
+  "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
 ];
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -94,7 +45,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const inputBox = vscode.window.createInputBox();
       inputBox.title = "Insert Numbers";
-      inputBox.prompt = "Examples: 1, 01, [1].aaa, a, あ, 2026/04/29, 23:59:58";
+      inputBox.prompt = "Examples: 1, 01, 1_, a, あ, 2026/04/29, 23:59:58";
       inputBox.placeholder = "Type a value to preview and press Enter";
       inputBox.ignoreFocusOut = true;
 
@@ -168,7 +119,7 @@ function detectSequenceFormatter(source: string): SequenceFormatter | undefined 
 
 /**
  * Creates a numeric sequence formatter.
- * Supports patterns like `1`, `1 ` and `01`, and also embedded forms like `[1].aaa`.
+ * Supports patterns like `1`, `1_` and `01`.
  */
 function createNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
   const match = /^(.*?)(\d+)([^\d]*)$/su.exec(source);
@@ -347,7 +298,7 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
 
 /**
  * Creates a character sequence formatter.
- * Supports patterns like `a`, `１`, `あ`, `ア` and also embedded forms like `[あ]aaa`.
+ * Supports patterns like `a`, `１`, `あ` and `ア`.
  */
 function createCharacterSequenceFormatter(source: string): SequenceFormatter | undefined {
   const chars = [...source];

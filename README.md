@@ -42,18 +42,10 @@ An extension to insert increasing numbers.
 ```
 
 ```text
-1 
-2 
-3 
-4 
-...
-```
-
-```text
-[1].aaa
-[2].aaa
-[3].aaa
-[4].aaa
+1_
+2_
+3_
+4_
 ...
 ```
 
@@ -102,14 +94,6 @@ D
 ｲ
 ｳ
 ｴ
-...
-```
-
-```text
-[あ]aaa
-[い]aaa
-[う]aaa
-[え]aaa
 ...
 ```
 
