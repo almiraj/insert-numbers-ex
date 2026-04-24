@@ -1,0 +1,51 @@
+{
+  "name": "insert-numbers-ex",
+  "displayName": "Insert Numbers Ex",
+  "description": "An extension to insert increasing numbers.",
+  "version": "1.0.0",
+  "publisher": "almiraj",
+  "icon": "images/icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/almiraj/insert-numbers-ex"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:insert-numbers-ex.insertNumbersEx"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "insert-numbers-ex.insertNumbersEx",
+        "title": "Insert Numbers Ex"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "insert-numbers-ex.insertNumbersEx",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "test": "npm run compile && node --test test",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.11",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.6.3",
+    "vsce": "^2.15.0"
+  }
+}
