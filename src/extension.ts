@@ -326,15 +326,18 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
     "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
     "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
   ];
-  const chars = [...source];
-  const [char = "", ...rest] = chars;
-  const suffix = rest.join("");
+  const match = /^(.)(.*)$/su.exec(source);
+  if (!match) {
+    return undefined;
+  }
+
+  const [, char, suffix] = match;
 
   for (const set of characterSets) {
     const members = [...set];
     const startIndex = members.indexOf(char);
     if (startIndex >= 0) {
-      return (offset: number) => `${members[startIndex + offset] ?? ""}${suffix}`;
+      return (offset: number) => `${members[(startIndex + offset) % members.length]}${suffix}`;
     }
   }
 
