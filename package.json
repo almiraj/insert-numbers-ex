@@ -5,6 +5,10 @@
   "version": "1.0.0",
   "publisher": "almiraj",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/almiraj/insert-numbers"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
