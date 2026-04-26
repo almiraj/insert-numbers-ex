@@ -19,8 +19,7 @@ type DateTimeShape = {
 
 const PREVIEW_DECORATION = vscode.window.createTextEditorDecorationType({
   after: {
-    color: new vscode.ThemeColor("editorCodeLens.foreground"),
-    margin: "0 0 0 1ch"
+    color: new vscode.ThemeColor("editorCodeLens.foreground")
   },
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
