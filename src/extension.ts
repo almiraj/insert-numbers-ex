@@ -105,7 +105,8 @@ function detectSequenceFormatter(source: string): SequenceFormatter | undefined 
     createDateSequenceFormatter(source) ??
     createTimeSequenceFormatter(source) ??
     createNumericSequenceFormatter(source) ??
-    createCharacterSequenceFormatter(source)
+    createCharacterSequenceFormatter(source) ??
+    createOnlyRepeatFormatter(source)
   );
 }
 
@@ -340,6 +341,14 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
     return (offset: number) => `${prefix}${String.fromCodePoint(codePoint + offset)}${suffix}`;
   }
   return undefined;
+}
+
+function createOnlyRepeatFormatter(source: string): SequenceFormatter | undefined {
+  if (source.length === 0) {
+    return undefined;
+  }
+
+  return () => source;
 }
 
 function addDays(date: Date, amount: number): Date {
