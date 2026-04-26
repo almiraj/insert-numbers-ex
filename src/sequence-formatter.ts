@@ -1,9 +1,11 @@
 export type SequenceFormatter = (index: number) => string;
 
+type DateSeparator = "/" | "-";
+
 type DateShape =
-  | { kind: "ymd-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: "/" | "-" }
-  | { kind: "mdy-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: "/" | "-" }
-  | { kind: "ym-slash"; yearWidth: number; monthWidth: number; separator: "/" | "-" }
+  | { kind: "ymd-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: DateSeparator }
+  | { kind: "mdy-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: DateSeparator }
+  | { kind: "ym-separated"; yearWidth: number; monthWidth: number; separator: DateSeparator }
   | { kind: "ymd-compact" }
   | { kind: "ym-compact" };
 
@@ -50,12 +52,13 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
 
 /**
  * Creates a date sequence formatter.
- * Supports patterns like `2026/04/29`, `2026/4/29`, `20260429`, `04/29/2026`, `4/29/2026`, `2026/04` and `202604`.
+ * Supports patterns like `2026/04/29`, `2026-04-29`, `2026/4/29`, `20260429`, `04/29/2026`, `04-29-2026`, `2026/04`, `2026-04` and `202604`.
  */
 function createDateSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const yearMonthMatch = /^(\d{4})\/(\d{1,2})$/u.exec(source);
+  const yearMonthMatch = /^(\d{4})([\/-])(\d{1,2})$/u.exec(source);
   if (yearMonthMatch && Number(yearMonthMatch[1]) >= 1970) {
-    const [, yearText, monthText] = yearMonthMatch;
+    const [, yearText, separatorText, monthText] = yearMonthMatch;
+    const separator = asDateSeparator(separatorText);
     const year = Number(yearText);
     const month = Number(monthText);
     if (month < 1 || month > 12) {
@@ -64,17 +67,18 @@ function createDateSequenceFormatter(source: string): SequenceFormatter | undefi
 
     const start = new Date(Date.UTC(year, month - 1, 1));
     const shape: DateShape = {
-      kind: "ym-slash",
+      kind: "ym-separated",
       yearWidth: yearText.length,
       monthWidth: 2,
-      separator: "/"
+      separator
     };
     return (index: number) => formatDate(addMonths(start, index), shape);
   }
 
-  const slashMatch = /^(\d{1,4})\/(\d{1,2})\/(\d{1,4})$/u.exec(source);
-  if (slashMatch) {
-    const [, part1, part2, part3] = slashMatch;
+  const separatedMatch = /^(\d{1,4})([\/-])(\d{1,2})\2(\d{1,4})$/u.exec(source);
+  if (separatedMatch) {
+    const [, part1, separatorText, part2, part3] = separatedMatch;
+    const separator = asDateSeparator(separatorText);
     if (part1.length === 4 && Number(part1) >= 1970) {
       const year = Number(part1);
       const month = Number(part2);
@@ -89,7 +93,7 @@ function createDateSequenceFormatter(source: string): SequenceFormatter | undefi
         yearWidth: part1.length,
         monthWidth: part2.length,
         dayWidth: part3.length,
-        separator: "/"
+        separator
       };
       return (index: number) => formatDate(addDays(start, index), shape);
     }
@@ -108,7 +112,7 @@ function createDateSequenceFormatter(source: string): SequenceFormatter | undefi
         yearWidth: part3.length,
         monthWidth: part1.length,
         dayWidth: part2.length,
-        separator: "/"
+        separator
       };
       return (index: number) => formatDate(addDays(start, index), shape);
     }
@@ -188,7 +192,8 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
     return undefined;
   }
 
-  const [, yearText, dateSeparator, monthText, dayText, separator, hourText, minuteText, secondText] = match;
+  const [, yearText, dateSeparatorText, monthText, dayText, separator, hourText, minuteText, secondText] = match;
+  const dateSeparator = asDateSeparator(dateSeparatorText);
   const year = Number(yearText);
   const month = Number(monthText);
   const day = Number(dayText);
@@ -207,7 +212,7 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
       yearWidth: yearText.length,
       monthWidth: monthText.length,
       dayWidth: dayText.length,
-      separator: dateSeparator as "/" | "-"
+      separator: dateSeparator
     },
     time: {
       withSeconds: true,
@@ -303,7 +308,7 @@ function formatDate(date: Date, shape: DateShape): string {
         day.padStart(shape.dayWidth, "0"),
         year.padStart(shape.yearWidth, "0")
       ].join(shape.separator);
-    case "ym-slash":
+    case "ym-separated":
       return `${year.padStart(shape.yearWidth, "0")}${shape.separator}${month.padStart(shape.monthWidth, "0")}`;
     case "ymd-compact":
       return `${year.padStart(4, "0")}${month.padStart(2, "0")}${day.padStart(2, "0")}`;
@@ -335,6 +340,10 @@ function isValidDate(year: number, month: number, day: number): boolean {
 
   const date = new Date(Date.UTC(year, month - 1, day));
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function asDateSeparator(separator: string): DateSeparator {
+  return separator === "-" ? "-" : "/";
 }
 
 function isValidTime(hour: number, minute: number, second: number): boolean {
