@@ -111,15 +111,15 @@ function detectSequenceFormatter(source: string): SequenceFormatter | undefined 
 
 /**
  * Creates a numeric sequence formatter.
- * Supports patterns like `1`, `1_` and `01`.
+ * Supports patterns like `1`, `1_`, `[1]`, and `01`.
  */
 function createNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const match = /^(\d+)([^\d]*)$/su.exec(source);
+  const match = /^([^\d]*?)(\d+)([^\d]*)$/su.exec(source);
   if (!match) {
     return undefined;
   }
 
-  const [, digits, suffix] = match;
+  const [, prefix, digits, suffix] = match;
   const start = Number.parseInt(digits, 10);
   const width = digits.length;
   const padded = digits.startsWith("0") && width > 1;
@@ -127,7 +127,7 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
   return (index: number) => {
     const value = String(start + index);
     const formatted = padded ? value.padStart(width, "0") : value;
-    return `${formatted}${suffix}`;
+    return `${prefix}${formatted}${suffix}`;
   };
 }
 
@@ -320,24 +320,24 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
     "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
     "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
   ];
-  const match = /^(.)(.*)$/su.exec(source);
+  const match = /^([^\d]*?)(.)(.*)$/su.exec(source);
   if (!match) {
     return undefined;
   }
 
-  const [, char, suffix] = match;
+  const [, prefix, char, suffix] = match;
 
   for (const set of characterSets) {
     const members = [...set];
     const startIndex = members.indexOf(char);
     if (startIndex >= 0) {
-      return (offset: number) => `${members[(startIndex + offset) % members.length]}${suffix}`;
+      return (offset: number) => `${prefix}${members[(startIndex + offset) % members.length]}${suffix}`;
     }
   }
 
   const codePoint = char.codePointAt(0);
   if (codePoint !== undefined && /\p{L}|\p{N}/u.test(char)) {
-    return (offset: number) => `${String.fromCodePoint(codePoint + offset)}${suffix}`;
+    return (offset: number) => `${prefix}${String.fromCodePoint(codePoint + offset)}${suffix}`;
   }
   return undefined;
 }
