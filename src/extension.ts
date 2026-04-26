@@ -37,8 +37,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const inputBox = vscode.window.createInputBox();
       inputBox.title = "Insert Numbers";
-      inputBox.prompt = "Support: 0, 1, 01, [1], 2026-04-29 23:59:58";
-      inputBox.placeholder = "0, 1, 01, [1], 2026-04-29 23:59:58";
+      inputBox.prompt = "Support: 0, 1, 01, [1], ①, 2026-04-29 23:59:58";
+      inputBox.placeholder = "0, 1, 01, [1], ①, 2026-04-29 23:59:58";
       inputBox.ignoreFocusOut = true;
 
       const clearPreview = () => {
@@ -355,13 +355,15 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
 
 /**
  * Creates a character sequence formatter.
- * Supports patterns like `a`, `１`, `あ` and `ア`.
+ * Supports patterns like `a`, `１`, ①, Ⅰ, `あ` and `ア`.
  */
 function createCharacterSequenceFormatter(source: string): SequenceFormatter | undefined {
   const characterSets = [
     "abcdefghijklmnopqrstuvwxyz",
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     "０１２３４５６７８９",
+    "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚",
+    "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ",
     "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
     "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
     "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
