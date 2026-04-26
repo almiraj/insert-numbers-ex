@@ -19,9 +19,6 @@ type DateTimeShape = {
 
 const PREVIEW_DECORATION = vscode.window.createTextEditorDecorationType({
   color: "transparent",
-  after: {
-    color: new vscode.ThemeColor("editorCodeLens.foreground")
-  },
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
 
@@ -108,38 +105,12 @@ function createPreviewDecoration(
   contentText: string
 ): vscode.DecorationOptions {
   const range = getInsertionRange(document, selection);
-  const activeLine = document.lineAt(selection.active.line);
-  if (activeLine.text.length === 0) {
-    return {
-      range,
-      renderOptions: {
-        before: {
-          color: "#93c5fd",
-          contentText
-        }
-      }
-    };
-  }
-
-  if (range.isEmpty) {
-    return {
-      range,
-      renderOptions: {
-        after: {
-          color: "#93c5fd",
-          contentText
-        }
-      }
-    };
-  }
+  const position = document.lineAt(selection.active.line).text.length === 0 || !range.isEmpty ? "before" : "after";
 
   return {
     range,
     renderOptions: {
-      before: {
-        color: "#93c5fd",
-        contentText
-      }
+      [position]: { contentText }
     }
   };
 }
