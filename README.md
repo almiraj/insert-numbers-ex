@@ -2,18 +2,24 @@
 
 ## Insert Numbers for Visual Studio Code
 
-An extension to insert increasing numbers.
+[![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23ea4aaa)](https://github.com/sponsors/almiraj/) - *If my work saves you time, consider supporting me!*
 
-[![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23ea4aaa)](https://github.com/sponsors)
+An extension to insert increasing numbers.
 
 <video controls poster="./media/demo.svg" width="960">
   <source src="./media/demo.mp4" type="video/mp4">
 </video>
 
-## USAGE
+## Usage
 
 * Command: `Insert Numbers`
-* Keybindings: `ctrl+alt+n` on Windows and Linux or `cmd+alt+n` on OSX
+* Keybindings: `ctrl+alt+n` on Windows and Linux or `cmd+alt+n` on macOS
+
+## Dedication
+
+This extension is dedicated to Asuka, with respect and gratitude.
+
+I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?itemName=Asuka.insertnumbers), and this project is a small tribute to that work.
 
 ## Examples
 
