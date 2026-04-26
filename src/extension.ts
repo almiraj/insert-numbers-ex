@@ -18,6 +18,7 @@ type DateTimeShape = {
 };
 
 const PREVIEW_DECORATION = vscode.window.createTextEditorDecorationType({
+  color: "transparent",
   after: {
     color: new vscode.ThemeColor("editorCodeLens.foreground")
   },
@@ -55,15 +56,9 @@ export function activate(context: vscode.ExtensionContext): void {
         inputBox.validationMessage = undefined;
         editor.setDecorations(
           PREVIEW_DECORATION,
-          editor.selections.map((selection, index) => ({
-            range: new vscode.Range(selection.active, selection.active),
-            renderOptions: {
-              after: {
-                color: "#93c5fd",
-                contentText: formatter(index)
-              }
-            }
-          }))
+          editor.selections.map((selection, index) =>
+            createPreviewDecoration(editor.document, selection, formatter(index))
+          )
         );
       };
 
@@ -78,7 +73,7 @@ export function activate(context: vscode.ExtensionContext): void {
         const selections = [...editor.selections];
         await editor.edit((editBuilder) => {
           selections.forEach((selection, index) => {
-            editBuilder.replace(selection, formatter(index));
+            editBuilder.replace(getInsertionRange(editor.document, selection), formatter(index));
           });
         });
 
@@ -97,6 +92,57 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {}
+
+function getInsertionRange(document: vscode.TextDocument, selection: vscode.Selection): vscode.Range {
+  const activeLine = document.lineAt(selection.active.line);
+  if (activeLine.isEmptyOrWhitespace) {
+    return new vscode.Range(activeLine.range.start, activeLine.range.end);
+  }
+
+  return selection;
+}
+
+function createPreviewDecoration(
+  document: vscode.TextDocument,
+  selection: vscode.Selection,
+  contentText: string
+): vscode.DecorationOptions {
+  const range = getInsertionRange(document, selection);
+  const activeLine = document.lineAt(selection.active.line);
+  if (activeLine.text.length === 0) {
+    return {
+      range,
+      renderOptions: {
+        before: {
+          color: "#93c5fd",
+          contentText
+        }
+      }
+    };
+  }
+
+  if (range.isEmpty) {
+    return {
+      range,
+      renderOptions: {
+        after: {
+          color: "#93c5fd",
+          contentText
+        }
+      }
+    };
+  }
+
+  return {
+    range,
+    renderOptions: {
+      before: {
+        color: "#93c5fd",
+        contentText
+      }
+    }
+  };
+}
 
 function detectSequenceFormatter(source: string): SequenceFormatter | undefined {
   return (
