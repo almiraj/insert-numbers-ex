@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const renderPreview = (value: string) => {
         const formatter = detectSequenceFormatter(value);
         if (!formatter) {
-          inputBox.validationMessage = value.length === 0 ? undefined : "Unsupported pattern.";
+          inputBox.validationMessage = undefined;
           clearPreview();
           return;
         }
@@ -42,7 +42,8 @@ export function activate(context: vscode.ExtensionContext): void {
       inputBox.onDidAccept(async () => {
         const formatter = detectSequenceFormatter(inputBox.value);
         if (!formatter) {
-          inputBox.validationMessage = "Unsupported pattern.";
+          clearPreview();
+          inputBox.hide();
           return;
         }
 
