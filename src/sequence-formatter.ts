@@ -91,8 +91,8 @@ function createDateSequenceFormatter(source: string): SequenceFormatter | undefi
       const shape: DateShape = {
         kind: "ymd-separated",
         yearWidth: part1.length,
-        monthWidth: part2.length,
-        dayWidth: part3.length,
+        monthWidth: getDatePartWidth(part2),
+        dayWidth: getDatePartWidth(part3, part2),
         separator
       };
       return (index: number) => formatDate(addDays(start, index), shape);
@@ -110,8 +110,8 @@ function createDateSequenceFormatter(source: string): SequenceFormatter | undefi
       const shape: DateShape = {
         kind: "mdy-separated",
         yearWidth: part3.length,
-        monthWidth: part1.length,
-        dayWidth: part2.length,
+        monthWidth: getDatePartWidth(part1),
+        dayWidth: getDatePartWidth(part2, part1),
         separator
       };
       return (index: number) => formatDate(addDays(start, index), shape);
@@ -240,6 +240,11 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
  * Supports patterns like `a`, `１`, ①, Ⅰ, `あ` and `ア`.
  */
 function createCharacterSequenceFormatter(source: string): SequenceFormatter | undefined {
+  const multiCharacterSets = [
+    ["竭", "竭｡", "竭｢", "竭｣"],
+    ["竇", "竇｡", "竇｢", "竇｣"],
+    ["繧｢", "繧､", "繧ｦ", "繧ｨ"]
+  ];
   const characterSets = [
     "abcdefghijklmnopqrstuvwxyz",
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -250,6 +255,15 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
     "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
     "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
   ];
+
+  for (const set of multiCharacterSets) {
+    const member = findCharacterSetMember(source, set);
+    if (member) {
+      return (offset: number) =>
+        `${member.prefix}${set[(member.startIndex + offset) % set.length]}${member.suffix}`;
+    }
+  }
+
   const match = /^([^\d]*?)(.)(.*)$/su.exec(source);
   if (!match) {
     return undefined;
@@ -269,6 +283,25 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
   if (codePoint !== undefined && /\p{L}|\p{N}/u.test(char)) {
     return (offset: number) => `${prefix}${String.fromCodePoint(codePoint + offset)}${suffix}`;
   }
+  return undefined;
+}
+
+function findCharacterSetMember(
+  source: string,
+  members: readonly string[]
+): { prefix: string; suffix: string; startIndex: number } | undefined {
+  for (let index = 0; index < members.length; index += 1) {
+    const member = members[index];
+    const at = source.indexOf(member);
+    if (at >= 0) {
+      return {
+        prefix: source.slice(0, at),
+        suffix: source.slice(at + member.length),
+        startIndex: index
+      };
+    }
+  }
+
   return undefined;
 }
 
@@ -350,6 +383,14 @@ function isValidDate(year: number, month: number, day: number): boolean {
 
 function asDateSeparator(separator: string): DateSeparator {
   return separator === "-" ? "-" : "/";
+}
+
+function getDatePartWidth(part: string, relatedPart?: string): number {
+  if (part.startsWith("0") || relatedPart?.startsWith("0")) {
+    return part.length;
+  }
+
+  return 1;
 }
 
 function isValidTime(hour: number, minute: number, second: number): boolean {

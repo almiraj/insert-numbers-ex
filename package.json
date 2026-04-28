@@ -37,6 +37,7 @@
   },
   "scripts": {
     "compile": "tsc -p ./",
+    "test": "npm run compile && node --test test",
     "watch": "tsc -watch -p ./",
     "package": "vsce package"
   },
