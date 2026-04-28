@@ -201,19 +201,25 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
   const minute = Number(minuteText);
   const second = Number(secondText);
 
-  if (!isValidDate(year, month, day) || !isValidTime(hour, minute, second)) {
+  if (!isValidDate(year, month, day)) {
+    return undefined;
+  }
+
+  const dateShape: Extract<DateShape, { kind: "ymd-separated" }> = {
+    kind: "ymd-separated",
+    yearWidth: yearText.length,
+    monthWidth: monthText.length,
+    dayWidth: dayText.length,
+    separator: dateSeparator
+  };
+
+  if (!isValidDateTimeTime(hour, minute, second)) {
     return undefined;
   }
 
   const start = Date.UTC(year, month - 1, day, hour, minute, second);
   const shape: DateTimeShape = {
-    date: {
-      kind: "ymd-separated",
-      yearWidth: yearText.length,
-      monthWidth: monthText.length,
-      dayWidth: dayText.length,
-      separator: dateSeparator
-    },
+    date: dateShape,
     time: {
       withSeconds: true,
       hourWidth: hourText.length,
@@ -348,4 +354,8 @@ function asDateSeparator(separator: string): DateSeparator {
 
 function isValidTime(hour: number, minute: number, second: number): boolean {
   return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59;
+}
+
+function isValidDateTimeTime(hour: number, minute: number, second: number): boolean {
+  return hour >= 0 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59;
 }
