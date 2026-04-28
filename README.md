@@ -128,10 +128,10 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ```
 
 ```text
+23:58
 23:59
 00:00
 00:01
-00:02
 ...
 ```
 
