@@ -64,6 +64,22 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ```
 
 ```text
+04/29
+04/30
+05/01
+05/02
+...
+```
+
+```text
+4/29
+4/30
+5/1
+5/2
+...
+```
+
+```text
 2026/04/29
 2026/04/30
 2026/05/01

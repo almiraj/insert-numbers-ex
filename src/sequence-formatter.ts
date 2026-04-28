@@ -5,6 +5,7 @@ type DateSeparator = "/" | "-";
 type DateShape =
   | { kind: "ymd-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: DateSeparator }
   | { kind: "mdy-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: DateSeparator }
+  | { kind: "md-separated"; monthWidth: number; dayWidth: number; separator: DateSeparator }
   | { kind: "ym-separated"; yearWidth: number; monthWidth: number; separator: DateSeparator }
   | { kind: "ymd-compact" }
   | { kind: "ym-compact" };
@@ -55,6 +56,26 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
  * Supports patterns like `2026/04/29`, `2026-04-29`, `2026/4/29`, `20260429`, `04/29/2026`, `04-29-2026`, `2026/04`, `2026-04` and `202604`.
  */
 function createDateSequenceFormatter(source: string): SequenceFormatter | undefined {
+  const monthDayMatch = /^(\d{1,2})([\/-])(\d{1,2})$/u.exec(source);
+  if (monthDayMatch) {
+    const [, monthText, separatorText, dayText] = monthDayMatch;
+    const separator = asDateSeparator(separatorText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    if (!isValidMonthDay(month, day)) {
+      return undefined;
+    }
+
+    const start = new Date(Date.UTC(1970, month - 1, day));
+    const shape: DateShape = {
+      kind: "md-separated",
+      monthWidth: getDatePartWidth(monthText),
+      dayWidth: getDatePartWidth(dayText, monthText),
+      separator
+    };
+    return (index: number) => formatDate(addDays(start, index), shape);
+  }
+
   const yearMonthMatch = /^(\d{4})([\/-])(\d{1,2})$/u.exec(source);
   if (yearMonthMatch && Number(yearMonthMatch[1]) >= 1970) {
     const [, yearText, separatorText, monthText] = yearMonthMatch;
@@ -240,11 +261,6 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
  * Supports patterns like `a`, `１`, ①, Ⅰ, `あ` and `ア`.
  */
 function createCharacterSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const multiCharacterSets = [
-    ["竭", "竭｡", "竭｢", "竭｣"],
-    ["竇", "竇｡", "竇｢", "竇｣"],
-    ["繧｢", "繧､", "繧ｦ", "繧ｨ"]
-  ];
   const characterSets = [
     "abcdefghijklmnopqrstuvwxyz",
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -255,14 +271,6 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
     "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
     "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
   ];
-
-  for (const set of multiCharacterSets) {
-    const member = findCharacterSetMember(source, set);
-    if (member) {
-      return (offset: number) =>
-        `${member.prefix}${set[(member.startIndex + offset) % set.length]}${member.suffix}`;
-    }
-  }
 
   const match = /^([^\d]*?)(.)(.*)$/su.exec(source);
   if (!match) {
@@ -283,25 +291,6 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
   if (codePoint !== undefined && /\p{L}|\p{N}/u.test(char)) {
     return (offset: number) => `${prefix}${String.fromCodePoint(codePoint + offset)}${suffix}`;
   }
-  return undefined;
-}
-
-function findCharacterSetMember(
-  source: string,
-  members: readonly string[]
-): { prefix: string; suffix: string; startIndex: number } | undefined {
-  for (let index = 0; index < members.length; index += 1) {
-    const member = members[index];
-    const at = source.indexOf(member);
-    if (at >= 0) {
-      return {
-        prefix: source.slice(0, at),
-        suffix: source.slice(at + member.length),
-        startIndex: index
-      };
-    }
-  }
-
   return undefined;
 }
 
@@ -347,6 +336,8 @@ function formatDate(date: Date, shape: DateShape): string {
         day.padStart(shape.dayWidth, "0"),
         year.padStart(shape.yearWidth, "0")
       ].join(shape.separator);
+    case "md-separated":
+      return [month.padStart(shape.monthWidth, "0"), day.padStart(shape.dayWidth, "0")].join(shape.separator);
     case "ym-separated":
       return `${year.padStart(shape.yearWidth, "0")}${shape.separator}${month.padStart(shape.monthWidth, "0")}`;
     case "ymd-compact":
@@ -381,12 +372,25 @@ function isValidDate(year: number, month: number, day: number): boolean {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
+function isValidMonthDay(month: number, day: number): boolean {
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return false;
+  }
+
+  const date = new Date(Date.UTC(1970, month - 1, day));
+  return date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
 function asDateSeparator(separator: string): DateSeparator {
   return separator === "-" ? "-" : "/";
 }
 
 function getDatePartWidth(part: string, relatedPart?: string): number {
-  if (part.startsWith("0") || relatedPart?.startsWith("0")) {
+  if (part.startsWith("0") || relatedPart?.startsWith("0") || (relatedPart === undefined && part.length > 1)) {
+    return part.length;
+  }
+
+  if (relatedPart !== undefined && relatedPart.length > 1) {
     return part.length;
   }
 
