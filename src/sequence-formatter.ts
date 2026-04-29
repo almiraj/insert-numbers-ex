@@ -34,7 +34,7 @@ export function detectSequenceFormatter(source: string): SequenceFormatter | und
  * Supports patterns like `1`, `1_`, `[1]`, and `01`.
  */
 function createNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const match = /^([^\d]*?)(\d+)([^\d]*)$/su.exec(source);
+  const match = /^(.*?)(\d+)(.*)$/su.exec(source);
   if (!match) {
     return undefined;
   }
