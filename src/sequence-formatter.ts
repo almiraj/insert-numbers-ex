@@ -90,7 +90,7 @@ function createDateSequenceFormatter(source: string): SequenceFormatter | undefi
     const shape: DateShape = {
       kind: "ym-separated",
       yearWidth: yearText.length,
-      monthWidth: 2,
+      monthWidth: getDatePartWidth(monthText),
       separator
     };
     return (index: number) => formatDate(addMonths(start, index), shape);
