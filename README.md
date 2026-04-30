@@ -88,10 +88,10 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ```
 
 ```text
-a
-b
-c
-d
+(a)
+(b)
+(c)
+(d)
 ...
 ```
 

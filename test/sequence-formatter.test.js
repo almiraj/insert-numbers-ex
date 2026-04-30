@@ -19,7 +19,7 @@ describe("README examples", () => {
     ["Ⅰ", ["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"]],
     ["１", ["１", "２", "３", "４"]],
     ["①", ["①", "②", "③", "④"]],
-    ["a", ["a", "b", "c", "d"]],
+    ["(a)", ["(a)", "(b)", "(c)", "(d)"]],
     ["ア", ["ア", "イ", "ウ", "エ"]],
     ["04/29", ["04/29", "04/30", "05/01", "05/02"]],
     ["4/29", ["4/29", "4/30", "5/1", "5/2"]],
@@ -117,18 +117,6 @@ describe("characterSets loops", () => {
 
   for (const [source, expected] of examples) {
     it(`loops ${source}`, () => {
-      assert.deepEqual(formatFirst(source), expected);
-    });
-  }
-});
-
-describe("characterSets with prefix or suffix", () => {
-  const examples = [
-    ["(a)", ["(a)", "(b)", "(c)", "(d)"]],
-  ];
-
-  for (const [source, expected] of examples) {
-    it(`character format ${source}`, () => {
       assert.deepEqual(formatFirst(source), expected);
     });
   }
