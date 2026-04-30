@@ -57,7 +57,7 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
  * Supports patterns like `０`, `１`, `１０` and `０１`.
  */
 function createJapaneseNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const japaneseNumberSet = ["０", "１", "２", "３", "４", "５", "６", "７", "８", "９"];
+  const japaneseNumericDigits = "０１２３４５６７８９";
 
   const match = /^(.*?)([０-９]+)(.*)$/su.exec(source);
   if (!match) {
@@ -65,7 +65,7 @@ function createJapaneseNumericSequenceFormatter(source: string): SequenceFormatt
   }
 
   const [, prefix, jaDigits, suffix] = match;
-  const digits = jaDigits.replace(/(.)/g, (_, m1) => String(japaneseNumberSet.indexOf(m1)));
+  const digits = jaDigits.normalize("NFKC");
 
   const start = Number.parseInt(digits, 10);
   const width = digits.length;
@@ -74,7 +74,7 @@ function createJapaneseNumericSequenceFormatter(source: string): SequenceFormatt
   return (index: number) => {
     const value = String(start + index);
     const formatted = padded ? value.padStart(width, "0") : value;
-    const jaFormatted = formatted.replace(/(.)/g, (_, m1) => japaneseNumberSet[Number.parseInt(m1, 10)]);
+    const jaFormatted = formatted.replace(/\d/g, digit => japaneseNumericDigits[Number(digit)]);
     return `${prefix}${jaFormatted}${suffix}`;
   };
 }
