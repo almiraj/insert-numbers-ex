@@ -272,25 +272,17 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
     "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
   ];
 
-  const match = /^([^\d]*?)(.)(.*)$/su.exec(source);
-  if (!match) {
-    return undefined;
-  }
-
-  const [, prefix, char, suffix] = match;
-
   for (const set of characterSets) {
     const members = [...set];
-    const startIndex = members.indexOf(char);
-    if (startIndex >= 0) {
-      return (offset: number) => `${prefix}${members[(startIndex + offset) % members.length]}${suffix}`;
+    for (const [startIndex, member] of members.entries()) {
+      const match = new RegExp(`^(.*?)${member}(.*)$`, "su").exec(source);
+      if (match) {
+        const [, prefix, suffix] = match;
+        return (offset: number) => `${prefix}${members[(startIndex + offset) % members.length]}${suffix}`;
+      }
     }
   }
 
-  const codePoint = char.codePointAt(0);
-  if (codePoint !== undefined && /\p{L}|\p{N}/u.test(char)) {
-    return (offset: number) => `${prefix}${String.fromCodePoint(codePoint + offset)}${suffix}`;
-  }
   return undefined;
 }
 

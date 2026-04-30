@@ -122,6 +122,18 @@ describe("characterSets loops", () => {
   }
 });
 
+describe("characterSets with prefix or suffix", () => {
+  const examples = [
+    ["(a)", ["(a)", "(b)", "(c)", "(d)"]],
+  ];
+
+  for (const [source, expected] of examples) {
+    it(`character format ${source}`, () => {
+      assert.deepEqual(formatFirst(source), expected);
+    });
+  }
+});
+
 it("repeats unsupported non-empty input without looping", () => {
   assert.deepEqual(formatFirst("-"), ["-", "-", "-", "-"]);
 });
