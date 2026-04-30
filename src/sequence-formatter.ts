@@ -24,6 +24,7 @@ export function detectSequenceFormatter(source: string): SequenceFormatter | und
     createDateSequenceFormatter(source) ??
     createTimeSequenceFormatter(source) ??
     createNumericSequenceFormatter(source) ??
+    createJapaneseNumericSequenceFormatter(source) ??
     createCharacterSequenceFormatter(source) ??
     createOnlyRepeatFormatter(source)
   );
@@ -48,6 +49,33 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
     const value = String(start + index);
     const formatted = padded ? value.padStart(width, "0") : value;
     return `${prefix}${formatted}${suffix}`;
+  };
+}
+
+/**
+ * Creates a Japanese numeric sequence formatter.
+ * Supports patterns like `０`, `１`, `１０` and `０１`.
+ */
+function createJapaneseNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
+  const japaneseNumberSet = ["０", "１", "２", "３", "４", "５", "６", "７", "８", "９"];
+
+  const match = /^(.*?)([０-９]+)(.*)$/su.exec(source);
+  if (!match) {
+    return undefined;
+  }
+
+  const [, prefix, jaDigits, suffix] = match;
+  const digits = jaDigits.replace(/(.)/g, (_, m1) => String(japaneseNumberSet.indexOf(m1)));
+
+  const start = Number.parseInt(digits, 10);
+  const width = digits.length;
+  const padded = digits.startsWith("0") && width > 1;
+
+  return (index: number) => {
+    const value = String(start + index);
+    const formatted = padded ? value.padStart(width, "0") : value;
+    const jaFormatted = formatted.replace(/(.)/g, (_, m1) => japaneseNumberSet[Number.parseInt(m1, 10)]);
+    return `${prefix}${jaFormatted}${suffix}`;
   };
 }
 
@@ -258,13 +286,12 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
 
 /**
  * Creates a character sequence formatter.
- * Supports patterns like `a`, `１`, ①, Ⅰ, `あ` and `ア`.
+ * Supports patterns like `a`, ①, Ⅰ, `あ` and `ア`.
  */
 function createCharacterSequenceFormatter(source: string): SequenceFormatter | undefined {
   const characterSets = [
     "abcdefghijklmnopqrstuvwxyz",
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    "０１２３４５６７８９",
     "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚",
     "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ",
     "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",

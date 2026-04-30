@@ -53,6 +53,23 @@ describe("README examples", () => {
   }
 });
 
+describe("japanese numberic", () => {
+  const examples = [
+    ["０", ["０", "１", "２", "３"]],
+    ["１", ["１", "２", "３", "４"]],
+    ["０１", ["０１", "０２", "０３", "０４"]],
+    ["８", ["８", "９", "１０", "１１"]],
+    ["１８", ["１８", "１９", "２０", "２１"]],
+    ["９８", ["９８", "９９", "１００", "１０１"]]
+  ];
+
+  for (const [source, expected] of examples) {
+    it(`formats ${source}`, () => {
+      assert.deepEqual(formatFirst(source), expected);
+    });
+  }
+});
+
 describe("avoid parsing as date", () => {
   const examples = [
     ["2026/13/29", ["2026/13/29", "2027/13/29", "2028/13/29", "2029/13/29"]],
@@ -107,7 +124,6 @@ describe("characterSets loops", () => {
   const examples = [
     ["y", ["y", "z", "a", "b"]],
     ["Y", ["Y", "Z", "A", "B"]],
-    ["８", ["８", "９", "０", "１"]],
     ["㉙", ["㉙", "㉚", "①", "②"]],
     ["Ⅺ", ["Ⅺ", "Ⅻ", "Ⅰ", "Ⅱ"]],
     ["を", ["を", "ん", "あ", "い"]],
