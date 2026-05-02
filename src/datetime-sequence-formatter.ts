@@ -1,4 +1,4 @@
-import type { SequenceFormatter } from "./sequence-formatter";
+import type { Incrementer } from "./sequence-formatter";
 
 type DateSeparator = "/" | "-";
 
@@ -18,7 +18,7 @@ type DateTimeShape = {
   separator: string;
 };
 
-export function createDateSequenceFormatter(source: string): SequenceFormatter | undefined {
+export function createDateIncrementer(source: string): Incrementer | undefined {
   const monthDayMatch = /^(\d{1,2})([\/-])(\d{1,2})$/u.exec(source);
   if (monthDayMatch) {
     const [, monthText, separatorText, dayText] = monthDayMatch;
@@ -128,7 +128,7 @@ export function createDateSequenceFormatter(source: string): SequenceFormatter |
   return undefined;
 }
 
-export function createTimeSequenceFormatter(source: string): SequenceFormatter | undefined {
+export function createTimeIncrementer(source: string): Incrementer | undefined {
   const hourMinuteSecond = /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
   if (hourMinuteSecond) {
     const [, hourText, minuteText, secondText] = hourMinuteSecond;
@@ -170,7 +170,7 @@ export function createTimeSequenceFormatter(source: string): SequenceFormatter |
   return (index: number) => formatTime(addMinutes(start, index), shape);
 }
 
-export function createDateTimeSequenceFormatter(source: string): SequenceFormatter | undefined {
+export function createDateTimeIncrementer(source: string): Incrementer | undefined {
   const match = /^(\d{4})([\/-])(\d{1,2})\2(\d{1,2})(\s+)(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
   if (!match) {
     return undefined;

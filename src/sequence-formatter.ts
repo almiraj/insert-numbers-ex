@@ -1,24 +1,24 @@
-import { createDateTimeSequenceFormatter, createDateSequenceFormatter, createTimeSequenceFormatter } from "./datetime-sequence-formatter";
+import { createDateIncrementer, createDateTimeIncrementer, createTimeIncrementer } from "./datetime-sequence-formatter";
 
-export type SequenceFormatter = (index: number) => string;
+export type Incrementer = (index: number) => string;
 
-export function detectSequenceFormatter(source: string): SequenceFormatter | undefined {
+export function detectIncrementer(source: string): Incrementer | undefined {
   return (
-    createDateTimeSequenceFormatter(source) ??
-    createDateSequenceFormatter(source) ??
-    createTimeSequenceFormatter(source) ??
-    createNumericSequenceFormatter(source) ??
-    createJapaneseNumericSequenceFormatter(source) ??
-    createCharacterSequenceFormatter(source) ??
-    createOnlyRepeatFormatter(source)
+    createDateTimeIncrementer(source) ??
+    createDateIncrementer(source) ??
+    createTimeIncrementer(source) ??
+    createNumericIncrementer(source) ??
+    createJapaneseNumericIncrementer(source) ??
+    createCharacterIncrementer(source) ??
+    createOnlyRepeatIncrementer(source)
   );
 }
 
 /**
- * Creates a numeric sequence formatter.
+ * Creates a numeric incrementer.
  * Supports patterns like `1`, `1_`, `[1]`, and `01`.
  */
-function createNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
+function createNumericIncrementer(source: string): Incrementer | undefined {
   const match = /^(.*?)(\d+)(.*)$/u.exec(source);
   if (!match) {
     return undefined;
@@ -37,10 +37,10 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
 }
 
 /**
- * Creates a Japanese numeric sequence formatter.
+ * Creates a Japanese numeric incrementer.
  * Supports patterns like `０`, `１`, `１０` and `０１`.
  */
-function createJapaneseNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
+function createJapaneseNumericIncrementer(source: string): Incrementer | undefined {
   const japaneseNumericDigits = "０１２３４５６７８９";
 
   const match = /^(.*?)([０-９]+)(.*)$/u.exec(source);
@@ -64,10 +64,10 @@ function createJapaneseNumericSequenceFormatter(source: string): SequenceFormatt
 }
 
 /**
- * Creates a character sequence formatter.
+ * Creates a character incrementer.
  * Supports patterns like ①, Ⅰ, `(a)` and `ア`.
  */
-function createCharacterSequenceFormatter(source: string): SequenceFormatter | undefined {
+function createCharacterIncrementer(source: string): Incrementer | undefined {
   const characterSets = [
     "abcdefghijklmnopqrstuvwxyz",
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -94,7 +94,7 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
   return undefined;
 }
 
-function createOnlyRepeatFormatter(source: string): SequenceFormatter | undefined {
+function createOnlyRepeatIncrementer(source: string): Incrementer | undefined {
   if (source.length === 0) {
     return undefined;
   }

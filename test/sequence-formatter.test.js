@@ -1,12 +1,12 @@
 const assert = require("node:assert/strict");
 const { describe, it } = require("node:test");
 
-const { detectSequenceFormatter } = require("../dist/sequence-formatter.js");
+const { detectIncrementer } = require("../dist/sequence-formatter.js");
 
 function formatFirst(source, count = 4) {
-  const formatter = detectSequenceFormatter(source);
-  assert.ok(formatter, `Expected "${source}" to be supported`);
-  return Array.from({ length: count }, (_, index) => formatter(index));
+  const incrementer = detectIncrementer(source);
+  assert.ok(incrementer, `Expected "${source}" to be supported`);
+  return Array.from({ length: count }, (_, index) => incrementer(index));
 }
 
 describe("README examples", () => {

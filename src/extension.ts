@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { detectSequenceFormatter } from "./sequence-formatter";
+import { detectIncrementer } from "./sequence-formatter";
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(PREVIEW_DECORATION);
@@ -22,8 +22,8 @@ export function activate(context: vscode.ExtensionContext): void {
       };
 
       const renderPreview = (value: string) => {
-        const formatter = detectSequenceFormatter(value);
-        if (!formatter) {
+        const incrementer = detectIncrementer(value);
+        if (!incrementer) {
           inputBox.validationMessage = undefined;
           clearPreview();
           return;
@@ -33,15 +33,15 @@ export function activate(context: vscode.ExtensionContext): void {
         editor.setDecorations(
           PREVIEW_DECORATION,
           editor.selections.map((selection, index) =>
-            createPreviewDecoration(editor.document, selection, formatter(index))
+            createPreviewDecoration(editor.document, selection, incrementer(index))
           )
         );
       };
 
       inputBox.onDidChangeValue(renderPreview);
       inputBox.onDidAccept(async () => {
-        const formatter = detectSequenceFormatter(inputBox.value);
-        if (!formatter) {
+        const incrementer = detectIncrementer(inputBox.value);
+        if (!incrementer) {
           clearPreview();
           inputBox.hide();
           return;
@@ -50,7 +50,7 @@ export function activate(context: vscode.ExtensionContext): void {
         const selections = [...editor.selections];
         await editor.edit((editBuilder) => {
           selections.forEach((selection, index) => {
-            editBuilder.replace(getInsertionRange(editor.document, selection), formatter(index));
+            editBuilder.replace(getInsertionRange(editor.document, selection), incrementer(index));
           });
         });
 
