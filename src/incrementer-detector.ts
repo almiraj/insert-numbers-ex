@@ -1,16 +1,16 @@
 import type { Incrementer } from "./incrementer";
 
-import { createCharacterIncrementer, createJapaneseNumericIncrementer, createNumericIncrementer, createOnlyRepeatFormatter } from "./incrementer-factory";
-import { createDateIncrementer, createDateTimeIncrementer, createTimeIncrementer } from "./incrementer-factory-datetime";
+import * as factory from "./incrementer-factory";
+import * as datetimeFactory from "./incrementer-factory-datetime";
 
 export function detectIncrementer(source: string): Incrementer | undefined {
   return (
-    createDateTimeIncrementer(source) ??
-    createDateIncrementer(source) ??
-    createTimeIncrementer(source) ??
-    createNumericIncrementer(source) ??
-    createJapaneseNumericIncrementer(source) ??
-    createCharacterIncrementer(source) ??
-    createOnlyRepeatFormatter(source)
+    datetimeFactory.createDateTimeIncrementer(source) ??
+    datetimeFactory.createDateIncrementer(source) ??
+    datetimeFactory.createTimeIncrementer(source) ??
+    factory.createNumericIncrementer(source) ??
+    factory.createJapaneseNumericIncrementer(source) ??
+    factory.createCharacterIncrementer(source) ??
+    factory.createOnlyRepeatFormatter(source)
   );
 }
