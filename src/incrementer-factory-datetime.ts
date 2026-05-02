@@ -18,6 +18,10 @@ type DateTimeShape = {
   separator: string;
 };
 
+/**
+ * Creates a date incrementer.
+ * Supports patterns like `2026/04/29`, `2026-04-29`, `2026/4/29`, `20260429`, `04/29/2026`, `04-29-2026`, `2026/04`, `2026-04` and `202604`.
+ */
 export function createDateIncrementer(source: string): Incrementer | undefined {
   const monthDayMatch = /^(\d{1,2})([\/-])(\d{1,2})$/u.exec(source);
   if (monthDayMatch) {
@@ -128,6 +132,10 @@ export function createDateIncrementer(source: string): Incrementer | undefined {
   return undefined;
 }
 
+/**
+ * Creates a time incrementer.
+ * Supports patterns like `23:59:58` and `23:58`.
+ */
 export function createTimeIncrementer(source: string): Incrementer | undefined {
   const hourMinuteSecond = /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
   if (hourMinuteSecond) {
@@ -170,6 +178,10 @@ export function createTimeIncrementer(source: string): Incrementer | undefined {
   return (index: number) => formatTime(addMinutes(start, index), shape);
 }
 
+/**
+ * Creates a date-time incrementer.
+ * Supports patterns like `2026/12/31 23:59:58` and `2026-12-31 23:59:58`.
+ */
 export function createDateTimeIncrementer(source: string): Incrementer | undefined {
   const match = /^(\d{4})([\/-])(\d{1,2})\2(\d{1,2})(\s+)(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
   if (!match) {

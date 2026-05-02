@@ -80,6 +80,9 @@ export function createCharacterIncrementer(source: string): Incrementer | undefi
   return undefined;
 }
 
+/**
+ * Creates an incrementer that simply repeats the source text (fallback).
+ */
 export function createOnlyRepeatFormatter(source: string): Incrementer | undefined {
   if (source.length === 0) {
     return undefined;

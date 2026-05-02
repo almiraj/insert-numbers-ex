@@ -3,6 +3,9 @@ import type { Incrementer } from "./incrementer";
 import * as factory from "./incrementer-factory";
 import * as datetimeFactory from "./incrementer-factory-datetime";
 
+/**
+ * Detects an incrementer from the source text.
+ */
 export function detectIncrementer(source: string): Incrementer | undefined {
   return (
     datetimeFactory.createDateTimeIncrementer(source) ??

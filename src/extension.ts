@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import { detectIncrementer } from "./incrementer-detector";
 
+/**
+ * Activates the Insert Numbers extension.
+ */
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(PREVIEW_DECORATION);
   context.subscriptions.push(
@@ -68,6 +71,9 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 }
 
+/**
+ * Deactivates the Insert Numbers extension.
+ */
 export function deactivate(): void {}
 
 const PREVIEW_DECORATION = vscode.window.createTextEditorDecorationType({
