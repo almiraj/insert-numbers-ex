@@ -129,9 +129,9 @@ export function createDateSequenceFormatter(source: string): SequenceFormatter |
 }
 
 export function createTimeSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const withSeconds = /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
-  if (withSeconds) {
-    const [, hourText, minuteText, secondText] = withSeconds;
+  const hourMinuteSecond = /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
+  if (hourMinuteSecond) {
+    const [, hourText, minuteText, secondText] = hourMinuteSecond;
     const hour = Number(hourText);
     const minute = Number(minuteText);
     const second = Number(secondText);
@@ -149,12 +149,12 @@ export function createTimeSequenceFormatter(source: string): SequenceFormatter |
     return (index: number) => formatTime(addSeconds(start, index), shape);
   }
 
-  const withoutSeconds = /^(\d{1,2}):(\d{1,2})$/u.exec(source);
-  if (!withoutSeconds) {
+  const hourMinute = /^(\d{1,2}):(\d{1,2})$/u.exec(source);
+  if (!hourMinute) {
     return undefined;
   }
 
-  const [, hourText, minuteText] = withoutSeconds;
+  const [, hourText, minuteText] = hourMinute;
   const hour = Number(hourText);
   const minute = Number(minuteText);
   if (!isValidTime(hour, minute, 0)) {
