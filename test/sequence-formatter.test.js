@@ -3,10 +3,14 @@ const { describe, it } = require("node:test");
 
 const { detectIncrementer } = require("../dist/sequence-formatter.js");
 
-function formatFirst(source, count = 4) {
+function incrementFor(source, count) {
   const incrementer = detectIncrementer(source);
   assert.ok(incrementer, `Expected "${source}" to be supported`);
-  return Array.from({ length: count }, (_, index) => incrementer(index));
+  const values = [];
+  for (let index = 0; index < count; index += 1) {
+    values.push(incrementer(index));
+  }
+  return values;
 }
 
 describe("README examples", () => {
@@ -48,7 +52,22 @@ describe("README examples", () => {
 
   for (const [source, expected] of examples) {
     it(`formats ${source}`, () => {
-      assert.deepEqual(formatFirst(source), expected);
+      assert.deepEqual(incrementFor(source, 4), expected);
+    });
+  }
+});
+
+describe("numberic", () => {
+  const examples = [
+    ["8", ["8", "9", "10", "11"]],
+    ["08", ["08", "09", "10", "11"]],
+    ["98", ["98", "99", "100", "101"]],
+    ["098", ["098", "099", "100", "101"]]
+  ];
+
+  for (const [source, expected] of examples) {
+    it(`formats ${source}`, () => {
+      assert.deepEqual(incrementFor(source, 4), expected);
     });
   }
 });
@@ -65,7 +84,7 @@ describe("japanese numberic", () => {
 
   for (const [source, expected] of examples) {
     it(`formats ${source}`, () => {
-      assert.deepEqual(formatFirst(source), expected);
+      assert.deepEqual(incrementFor(source, 4), expected);
     });
   }
 });
@@ -115,7 +134,7 @@ describe("avoid parsing as date", () => {
 
   for (const [source, expected] of examples) {
     it(`formats ${source}`, () => {
-      assert.deepEqual(formatFirst(source), expected);
+      assert.deepEqual(incrementFor(source, 4), expected);
     });
   }
 });
@@ -135,11 +154,11 @@ describe("characterSets loops", () => {
 
   for (const [source, expected] of examples) {
     it(`loops ${source}`, () => {
-      assert.deepEqual(formatFirst(source), expected);
+      assert.deepEqual(incrementFor(source, 4), expected);
     });
   }
 });
 
 it("repeats unsupported non-empty input without looping", () => {
-  assert.deepEqual(formatFirst("-"), ["-", "-", "-", "-"]);
+  assert.deepEqual(incrementFor("-", 4), ["-", "-", "-", "-"]);
 });
