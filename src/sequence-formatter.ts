@@ -99,5 +99,5 @@ function createOnlyRepeatFormatter(source: string): SequenceFormatter | undefine
     return undefined;
   }
 
-  return () => source;
+  return (_index: number) => source;
 }
