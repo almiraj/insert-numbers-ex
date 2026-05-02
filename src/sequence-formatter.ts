@@ -286,12 +286,14 @@ function createDateTimeSequenceFormatter(source: string): SequenceFormatter | un
 
 /**
  * Creates a character sequence formatter.
- * Supports patterns like `a`, ①, Ⅰ, `あ` and `ア`.
+ * Supports patterns like ①, Ⅰ, `(a)` and `ア`.
  */
 function createCharacterSequenceFormatter(source: string): SequenceFormatter | undefined {
   const characterSets = [
     "abcdefghijklmnopqrstuvwxyz",
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ",
+    "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ",
     "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚",
     "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ",
     "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
