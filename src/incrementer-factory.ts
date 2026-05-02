@@ -72,7 +72,7 @@ export function createCharacterIncrementer(source: string): Incrementer | undefi
       const match = new RegExp(`^(.*?)${member}(.*)$`, "u").exec(source);
       if (match) {
         const [, prefix, suffix] = match;
-        return (offset: number) => `${prefix}${members[(startIndex + offset) % members.length]}${suffix}`;
+        return (index: number) => `${prefix}${members[(startIndex + index) % members.length]}${suffix}`;
       }
     }
   }
