@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { detectIncrementer } from "./sequence-formatter";
+import { detectIncrementer } from "./incrementer";
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(PREVIEW_DECORATION);

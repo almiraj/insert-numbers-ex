@@ -1,4 +1,4 @@
-import { createDateIncrementer, createDateTimeIncrementer, createTimeIncrementer } from "./datetime-sequence-formatter";
+import { createDateIncrementer, createDateTimeIncrementer, createTimeIncrementer } from "./datetime-incrementer";
 
 export type Incrementer = (index: number) => string;
 

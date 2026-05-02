@@ -1,4 +1,4 @@
-import type { Incrementer } from "./sequence-formatter";
+import type { Incrementer } from "./incrementer";
 
 type DateSeparator = "/" | "-";
 
