@@ -19,7 +19,7 @@ export function detectSequenceFormatter(source: string): SequenceFormatter | und
  * Supports patterns like `1`, `1_`, `[1]`, and `01`.
  */
 function createNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
-  const match = /^(.*?)(\d+)(.*)$/su.exec(source);
+  const match = /^(.*?)(\d+)(.*)$/u.exec(source);
   if (!match) {
     return undefined;
   }
@@ -43,7 +43,7 @@ function createNumericSequenceFormatter(source: string): SequenceFormatter | und
 function createJapaneseNumericSequenceFormatter(source: string): SequenceFormatter | undefined {
   const japaneseNumericDigits = "０１２３４５６７８９";
 
-  const match = /^(.*?)([０-９]+)(.*)$/su.exec(source);
+  const match = /^(.*?)([０-９]+)(.*)$/u.exec(source);
   if (!match) {
     return undefined;
   }
@@ -83,7 +83,7 @@ function createCharacterSequenceFormatter(source: string): SequenceFormatter | u
   for (const set of characterSets) {
     const members = [...set];
     for (const [startIndex, member] of members.entries()) {
-      const match = new RegExp(`^(.*?)${member}(.*)$`, "su").exec(source);
+      const match = new RegExp(`^(.*?)${member}(.*)$`, "u").exec(source);
       if (match) {
         const [, prefix, suffix] = match;
         return (offset: number) => `${prefix}${members[(startIndex + offset) % members.length]}${suffix}`;
