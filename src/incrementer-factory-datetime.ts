@@ -45,7 +45,7 @@ export default class DatetimeIncrementerFactory {
 
   /**
    * Creates a year-month-day incrementer.
-   * Supports patterns like `2026/04/29`, `2026-04-29` and `2026/4/29`.
+   * Supports patterns like `2026/04/29`, `2026-04-29`, `2026/4/29` and `2026-4-29`.
    */
   static createYmdIncrementer(source: string): Incrementer | undefined {
     const match = /^(\d{4})([\/-])(\d{1,2})\2(\d{1,2})$/u.exec(source);
@@ -76,7 +76,7 @@ export default class DatetimeIncrementerFactory {
 
   /**
    * Creates a month-day-year incrementer.
-   * Supports patterns like `04/29/2026`, `04-29-2026` and `4/29/2026`.
+   * Supports patterns like `04/29/2026`, `04-29-2026`, `4/29/2026` and `4-29-2026`.
    */
   static createMdydIncrementer(source: string): Incrementer | undefined {
     const match = /^(\d{1,2})([\/-])(\d{1,2})\2(\d{4})$/u.exec(source);
@@ -136,7 +136,7 @@ export default class DatetimeIncrementerFactory {
 
   /**
    * Creates a year-month incrementer.
-   * Supports patterns like `2026/04`, `2026-04` and `2026/4`.
+   * Supports patterns like `2026/04`, `2026-04`, `2026/4` and `2026-4`.
    */
   static createYmIncrementer(source: string): Incrementer | undefined {
     const match = /^(\d{4})([\/-])(\d{1,2})$/u.exec(source);
