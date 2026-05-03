@@ -1,7 +1,5 @@
 import type { Incrementer } from "./incrementer";
 
-type DateSeparator = "/" | "-";
-
 /**
  * Creates date and time incrementers.
  */
@@ -16,8 +14,7 @@ export default class DatetimeIncrementerFactory {
       return undefined;
     }
 
-    const [, yearText, dateSeparatorText, monthText, dayText, separator, hourText, minuteText, secondText] = match;
-    const dateSeparator = asDateSeparator(dateSeparatorText);
+    const [, yearText, separatorText, monthText, dayText, spacer, hourText, minuteText, secondText] = match;
     const year = Number(yearText);
     const month = Number(monthText);
     const day = Number(dayText);
@@ -31,12 +28,18 @@ export default class DatetimeIncrementerFactory {
 
     const start = Date.UTC(year, month - 1, day, hour, minute, second);
     return (index: number) => {
-      const value = new Date(start + index * 1000);
-      return (
-        formatYmdDate(value, dateSeparator, yearText.length, monthText.length, dayText.length) +
-        separator +
-        formatTime(value, hourText.length, minuteText.length, secondText.length)
-      );
+      const incrementedDate = new Date(start + index * 1000);
+      const dateText = [
+        String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0"),
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthText.length, "0"),
+        String(incrementedDate.getUTCDate()).padStart(dayText.length, "0")
+      ].join(separatorText);
+      const timeText = [
+        String(incrementedDate.getUTCHours()).padStart(hourText.length, "0"),
+        String(incrementedDate.getUTCMinutes()).padStart(minuteText.length, "0"),
+        String(incrementedDate.getUTCSeconds()).padStart(secondText.length, "0")
+      ].join(":");
+      return dateText + spacer + timeText;
     };
   }
 
@@ -59,15 +62,16 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(year, month - 1, day));
-    const separator = asDateSeparator(separatorText);
-    return (index: number) =>
-      formatYmdDate(
-        addDays(start, index),
-        separator,
-        yearText.length,
-        getDatePartWidth(monthText),
-        getDatePartWidth(dayText, monthText)
-      );
+    const monthWidth = getDatePartWidth(monthText);
+    const dayWidth = getDatePartWidth(dayText, monthText);
+    return (index: number) => {
+      const incrementedDate = addDays(start, index);
+      return [
+        String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0"),
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthWidth, "0"),
+        String(incrementedDate.getUTCDate()).padStart(dayWidth, "0")
+      ].join(separatorText);
+    };
   }
 
   /**
@@ -89,15 +93,16 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(year, month - 1, day));
-    const separator = asDateSeparator(separatorText);
-    return (index: number) =>
-      formatMdyDate(
-        addDays(start, index),
-        separator,
-        getDatePartWidth(monthText),
-        getDatePartWidth(dayText, monthText),
-        yearText.length
-      );
+    const monthWidth = getDatePartWidth(monthText);
+    const dayWidth = getDatePartWidth(dayText, monthText);
+    return (index: number) => {
+      const incrementedDate = addDays(start, index);
+      return [
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthWidth, "0"),
+        String(incrementedDate.getUTCDate()).padStart(dayWidth, "0"),
+        String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0")
+      ].join(separatorText);
+    };
   }
 
   /**
@@ -118,14 +123,15 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(1970, month - 1, day));
-    const separator = asDateSeparator(separatorText);
-    return (index: number) =>
-      formatMdDate(
-        addDays(start, index),
-        separator,
-        getDatePartWidth(monthText),
-        getDatePartWidth(dayText, monthText)
-      );
+    const monthWidth = getDatePartWidth(monthText);
+    const dayWidth = getDatePartWidth(dayText, monthText);
+    return (index: number) => {
+      const incrementedDate = addDays(start, index);
+      return [
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthWidth, "0"),
+        String(incrementedDate.getUTCDate()).padStart(dayWidth, "0")
+      ].join(separatorText);
+    };
   }
 
   /**
@@ -146,9 +152,14 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(year, month - 1, 1));
-    const separator = asDateSeparator(separatorText);
-    return (index: number) =>
-      formatYmDate(addMonths(start, index), separator, yearText.length, getDatePartWidth(monthText));
+    const monthWidth = getDatePartWidth(monthText);
+    return (index: number) => {
+      const incrementedDate = addMonths(start, index);
+      return [
+        String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0"),
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthWidth, "0")
+      ].join(separatorText);
+    };
   }
 
   /**
@@ -170,7 +181,14 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(1970, 0, 1, hour, minute, second));
-    return (index: number) => formatTime(addSeconds(start, index), hourText.length, minuteText.length, secondText.length);
+    return (index: number) => {
+      const incrementedDate = addSeconds(start, index);
+      return [
+        String(incrementedDate.getUTCHours()).padStart(hourText.length, "0"),
+        String(incrementedDate.getUTCMinutes()).padStart(minuteText.length, "0"),
+        String(incrementedDate.getUTCSeconds()).padStart(secondText.length, "0")
+      ].join(":");
+    };
   }
 
   /**
@@ -191,7 +209,13 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(1970, 0, 1, hour, minute, 0));
-    return (index: number) => formatTime(addMinutes(start, index), hourText.length, minuteText.length);
+    return (index: number) => {
+      const incrementedDate = addMinutes(start, index);
+      return [
+        String(incrementedDate.getUTCHours()).padStart(hourText.length, "0"),
+        String(incrementedDate.getUTCMinutes()).padStart(minuteText.length, "0")
+      ].join(":");
+    };
   }
 }
 
@@ -211,49 +235,6 @@ function addSeconds(date: Date, amount: number): Date {
   return new Date(date.getTime() + amount * 1000);
 }
 
-function formatYmdDate(date: Date, separator: DateSeparator, yearWidth: number, monthWidth: number, dayWidth: number): string {
-  return [
-    String(date.getUTCFullYear()).padStart(yearWidth, "0"),
-    String(date.getUTCMonth() + 1).padStart(monthWidth, "0"),
-    String(date.getUTCDate()).padStart(dayWidth, "0")
-  ].join(separator);
-}
-
-function formatMdyDate(date: Date, separator: DateSeparator, monthWidth: number, dayWidth: number, yearWidth: number): string {
-  return [
-    String(date.getUTCMonth() + 1).padStart(monthWidth, "0"),
-    String(date.getUTCDate()).padStart(dayWidth, "0"),
-    String(date.getUTCFullYear()).padStart(yearWidth, "0")
-  ].join(separator);
-}
-
-function formatMdDate(date: Date, separator: DateSeparator, monthWidth: number, dayWidth: number): string {
-  return [
-    String(date.getUTCMonth() + 1).padStart(monthWidth, "0"),
-    String(date.getUTCDate()).padStart(dayWidth, "0")
-  ].join(separator);
-}
-
-function formatYmDate(date: Date, separator: DateSeparator, yearWidth: number, monthWidth: number): string {
-  return (
-    String(date.getUTCFullYear()).padStart(yearWidth, "0") +
-    separator +
-    String(date.getUTCMonth() + 1).padStart(monthWidth, "0")
-  );
-}
-
-function formatTime(date: Date, hourWidth: number, minuteWidth: number, secondWidth?: number): string {
-  const hour = String(date.getUTCHours()).padStart(hourWidth, "0");
-  const minute = String(date.getUTCMinutes()).padStart(minuteWidth, "0");
-
-  if (secondWidth !== undefined) {
-    const second = String(date.getUTCSeconds()).padStart(secondWidth, "0");
-    return `${hour}:${minute}:${second}`;
-  }
-
-  return `${hour}:${minute}`;
-}
-
 function isValidDate(year: number, month: number, day: number): boolean {
   if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31) {
     return false;
@@ -270,10 +251,6 @@ function isValidMonthDay(month: number, day: number): boolean {
 
   const date = new Date(Date.UTC(1970, month - 1, day));
   return date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-}
-
-function asDateSeparator(separator: string): DateSeparator {
-  return separator === "-" ? "-" : "/";
 }
 
 function getDatePartWidth(part: string, relatedPart?: string): number {
