@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { detectIncrementer } from "./incrementer-detector";
+import { detectIncrementer } from "./incrementer-facade";
 
 /**
  * Activates the Insert Numbers extension.

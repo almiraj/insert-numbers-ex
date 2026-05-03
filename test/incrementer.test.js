@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const { describe, it } = require("node:test");
 
-const { detectIncrementer } = require("../dist/incrementer-detector.js");
+const { detectIncrementer } = require("../dist/incrementer-facade.js");
 
 function incrementFor(source, count) {
   const incrementer = detectIncrementer(source);
