@@ -58,7 +58,7 @@ export default class IncrementerFactory {
    * Supports patterns like ①, Ⅰ, `(a)` and `ア`.
    */
   static createCharacterIncrementer(source: string): Incrementer | undefined {
-    const characterSets = [
+    const charMemberSets = [
       "abcdefghijklmnopqrstuvwxyz",
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
       "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ",
@@ -70,22 +70,23 @@ export default class IncrementerFactory {
       "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
     ];
 
-    let position = 0;
-    for (const character of [...source]) {
-      if (/[\d０-９]/u.test(character)) {
+    let sourceOffset = 0;
+    for (const char of [...source]) {
+      if (/[\d０-９]/u.test(char)) {
         return undefined;
       }
 
-      for (const set of characterSets) {
-        const members = [...set];
-        const startIndex = members.indexOf(character);
-        if (startIndex >= 0) {
-          const suffix = source.slice(position + character.length);
-          const prefix = source.slice(0, position);
-          return (index: number) => `${prefix}${members[(startIndex + index) % members.length]}${suffix}`;
+      for (const charMemberSet of charMemberSets) {
+        const charMembers = [...charMemberSet];
+        const startIdx = charMembers.indexOf(char);
+        if (startIdx >= 0) {
+          const prefix = source.slice(0, sourceOffset);
+          const suffix = source.slice(sourceOffset + char.length);
+          return (index: number) => `${prefix}${charMembers[(startIdx + index) % charMembers.length]}${suffix}`;
         }
       }
-      position += character.length;
+
+      sourceOffset += char.length;
     }
 
     return undefined;
