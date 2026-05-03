@@ -62,14 +62,14 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(year, month - 1, day));
-    const monthWidth = getDatePartWidth(monthText);
-    const dayWidth = getDatePartWidth(dayText, monthText);
+    const monthPaddingWidth = getDatePartPaddingWidth(monthText);
+    const dayPaddingWidth = getDatePartPaddingWidth(dayText, monthText);
     return (index: number) => {
       const incrementedDate = addDays(start, index);
       return [
         String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0"),
-        String(incrementedDate.getUTCMonth() + 1).padStart(monthWidth, "0"),
-        String(incrementedDate.getUTCDate()).padStart(dayWidth, "0")
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthPaddingWidth, "0"),
+        String(incrementedDate.getUTCDate()).padStart(dayPaddingWidth, "0")
       ].join(separatorText);
     };
   }
@@ -93,13 +93,13 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(year, month - 1, day));
-    const monthWidth = getDatePartWidth(monthText);
-    const dayWidth = getDatePartWidth(dayText, monthText);
+    const monthPaddingWidth = getDatePartPaddingWidth(monthText);
+    const dayPaddingWidth = getDatePartPaddingWidth(dayText, monthText);
     return (index: number) => {
       const incrementedDate = addDays(start, index);
       return [
-        String(incrementedDate.getUTCMonth() + 1).padStart(monthWidth, "0"),
-        String(incrementedDate.getUTCDate()).padStart(dayWidth, "0"),
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthPaddingWidth, "0"),
+        String(incrementedDate.getUTCDate()).padStart(dayPaddingWidth, "0"),
         String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0")
       ].join(separatorText);
     };
@@ -123,13 +123,13 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(1970, month - 1, day));
-    const monthWidth = getDatePartWidth(monthText);
-    const dayWidth = getDatePartWidth(dayText, monthText);
+    const monthPaddingWidth = getDatePartPaddingWidth(monthText);
+    const dayPaddingWidth = getDatePartPaddingWidth(dayText, monthText);
     return (index: number) => {
       const incrementedDate = addDays(start, index);
       return [
-        String(incrementedDate.getUTCMonth() + 1).padStart(monthWidth, "0"),
-        String(incrementedDate.getUTCDate()).padStart(dayWidth, "0")
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthPaddingWidth, "0"),
+        String(incrementedDate.getUTCDate()).padStart(dayPaddingWidth, "0")
       ].join(separatorText);
     };
   }
@@ -152,12 +152,12 @@ export default class DatetimeIncrementerFactory {
     }
 
     const start = new Date(Date.UTC(year, month - 1, 1));
-    const monthWidth = getDatePartWidth(monthText);
+    const monthPaddingWidth = getDatePartPaddingWidth(monthText);
     return (index: number) => {
       const incrementedDate = addMonths(start, index);
       return [
         String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0"),
-        String(incrementedDate.getUTCMonth() + 1).padStart(monthWidth, "0")
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthPaddingWidth, "0")
       ].join(separatorText);
     };
   }
@@ -253,7 +253,15 @@ function isValidMonthDay(month: number, day: number): boolean {
   return date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-function getDatePartWidth(part: string, relatedPart?: string): number {
+function isValidTime(hour: number, minute: number, second: number): boolean {
+  return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59;
+}
+
+function isValidDateTimeTime(hour: number, minute: number, second: number): boolean {
+  return hour >= 0 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59;
+}
+
+function getDatePartPaddingWidth(part: string, relatedPart?: string): number {
   if (part.startsWith("0") || relatedPart?.startsWith("0") || (relatedPart === undefined && part.length > 1)) {
     return part.length;
   }
@@ -263,12 +271,4 @@ function getDatePartWidth(part: string, relatedPart?: string): number {
   }
 
   return 1;
-}
-
-function isValidTime(hour: number, minute: number, second: number): boolean {
-  return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59;
-}
-
-function isValidDateTimeTime(hour: number, minute: number, second: number): boolean {
-  return hour >= 0 && minute >= 0 && minute <= 59 && second >= 0 && second <= 59;
 }
