@@ -155,3 +155,24 @@ describe("characterSets loops", () => {
 it("repeats unsupported non-empty input without looping", () => {
   assert.deepEqual(incrementFor("-", 4), ["-", "-", "-", "-"]);
 });
+
+describe("detection order", () => {
+  const examples = [
+    ["1a", "2a"],
+    ["a1", "b1"],
+    ["０1", "１1"],
+    ["1Ａ", "2Ａ"],
+    ["Ⅰa", "Ⅱa"],
+    ["aⅠ", "bⅠ"],
+    ["aＡ", "bＡ"],
+    ["Ａa", "Ｂa"]
+  ];
+
+  for (const [source, expected] of examples) {
+    it(`increments the first detected target in ${source}`, () => {
+      const incrementer = detectIncrementer(source);
+      assert.ok(incrementer, `Expected "${source}" to be supported`);
+      assert.equal(incrementer(1), expected);
+    });
+  }
+});

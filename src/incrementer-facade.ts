@@ -15,8 +15,8 @@ export function detectIncrementer(source: string): Incrementer | undefined {
     DatetimeIncrementerFactory.createYmIncrementer(source) ??
     DatetimeIncrementerFactory.createTimeWithSecondIncrementer(source) ??
     DatetimeIncrementerFactory.createTimeWithoutSecondIncrementer(source) ??
-    IncrementerFactory.createJapaneseNumericIncrementer(source) ??
     IncrementerFactory.createCharacterIncrementer(source) ??
+    IncrementerFactory.createJapaneseNumericIncrementer(source) ??
     IncrementerFactory.createNumericIncrementer(source) ??
     IncrementerFactory.createOnlyRepeatFormatter(source)
   );

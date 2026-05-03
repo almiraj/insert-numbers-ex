@@ -70,15 +70,22 @@ export default class IncrementerFactory {
       "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
     ];
 
-    for (const set of characterSets) {
-      const members = [...set];
-      for (const [startIndex, member] of members.entries()) {
-        const match = new RegExp(`^(.*?)${member}(.*)$`, "u").exec(source);
-        if (match) {
-          const [, prefix, suffix] = match;
+    let position = 0;
+    for (const character of [...source]) {
+      if (/[\d０-９]/u.test(character)) {
+        return undefined;
+      }
+
+      for (const set of characterSets) {
+        const members = [...set];
+        const startIndex = members.indexOf(character);
+        if (startIndex >= 0) {
+          const suffix = source.slice(position + character.length);
+          const prefix = source.slice(0, position);
           return (index: number) => `${prefix}${members[(startIndex + index) % members.length]}${suffix}`;
         }
       }
+      position += character.length;
     }
 
     return undefined;
