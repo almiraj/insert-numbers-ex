@@ -33,7 +33,7 @@ export default class IncrementerFactory {
   static createJapaneseNumericIncrementer(source: string): Incrementer | undefined {
     const japaneseNumericDigits = "０１２３４５６７８９";
 
-    const match = /^(.*?)([０-９]+)(.*)$/u.exec(source);
+    const match = /^([^\d０-９]*)([０-９]+)(.*)$/u.exec(source);
     if (!match) {
       return undefined;
     }
