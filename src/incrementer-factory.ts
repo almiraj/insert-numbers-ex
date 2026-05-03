@@ -1,92 +1,97 @@
 import type { Incrementer } from "./incrementer";
 
 /**
- * Creates a numeric incrementer.
- * Supports patterns like `1`, `1_`, `[1]`, and `01`.
+ * Creates incrementers for numbers, characters, and fallback values.
  */
-export function createNumericIncrementer(source: string): Incrementer | undefined {
-  const match = /^(.*?)(\d+)(.*)$/u.exec(source);
-  if (!match) {
-    return undefined;
+export default class IncrementerFactory {
+  /**
+   * Creates a numeric incrementer.
+   * Supports patterns like `1`, `1_`, `[1]`, and `01`.
+   */
+  static createNumericIncrementer(source: string): Incrementer | undefined {
+    const match = /^(.*?)(\d+)(.*)$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, prefix, digits, suffix] = match;
+    const start = Number.parseInt(digits, 10);
+    const width = digits.length;
+    const padded = digits.startsWith("0") && width > 1;
+
+    return (index: number) => {
+      const value = String(start + index);
+      const formatted = padded ? value.padStart(width, "0") : value;
+      return `${prefix}${formatted}${suffix}`;
+    };
   }
 
-  const [, prefix, digits, suffix] = match;
-  const start = Number.parseInt(digits, 10);
-  const width = digits.length;
-  const padded = digits.startsWith("0") && width > 1;
+  /**
+   * Creates a Japanese numeric incrementer.
+   * Supports patterns like `０`, `１`, `１０` and `０１`.
+   */
+  static createJapaneseNumericIncrementer(source: string): Incrementer | undefined {
+    const japaneseNumericDigits = "０１２３４５６７８９";
 
-  return (index: number) => {
-    const value = String(start + index);
-    const formatted = padded ? value.padStart(width, "0") : value;
-    return `${prefix}${formatted}${suffix}`;
-  };
-}
+    const match = /^(.*?)([０-９]+)(.*)$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
 
-/**
- * Creates a Japanese numeric incrementer.
- * Supports patterns like `０`, `１`, `１０` and `０１`.
- */
-export function createJapaneseNumericIncrementer(source: string): Incrementer | undefined {
-  const japaneseNumericDigits = "０１２３４５６７８９";
+    const [, prefix, jaDigits, suffix] = match;
+    const digits = jaDigits.normalize("NFKC");
 
-  const match = /^(.*?)([０-９]+)(.*)$/u.exec(source);
-  if (!match) {
-    return undefined;
+    const start = Number.parseInt(digits, 10);
+    const width = digits.length;
+    const padded = digits.startsWith("0") && width > 1;
+
+    return (index: number) => {
+      const value = String(start + index);
+      const formatted = padded ? value.padStart(width, "0") : value;
+      const jaFormatted = formatted.replace(/\d/g, digit => japaneseNumericDigits[Number(digit)]);
+      return `${prefix}${jaFormatted}${suffix}`;
+    };
   }
 
-  const [, prefix, jaDigits, suffix] = match;
-  const digits = jaDigits.normalize("NFKC");
+  /**
+   * Creates a character incrementer.
+   * Supports patterns like ①, Ⅰ, `(a)` and `ア`.
+   */
+  static createCharacterIncrementer(source: string): Incrementer | undefined {
+    const characterSets = [
+      "abcdefghijklmnopqrstuvwxyz",
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+      "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ",
+      "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ",
+      "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚",
+      "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ",
+      "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
+      "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
+      "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
+    ];
 
-  const start = Number.parseInt(digits, 10);
-  const width = digits.length;
-  const padded = digits.startsWith("0") && width > 1;
-
-  return (index: number) => {
-    const value = String(start + index);
-    const formatted = padded ? value.padStart(width, "0") : value;
-    const jaFormatted = formatted.replace(/\d/g, digit => japaneseNumericDigits[Number(digit)]);
-    return `${prefix}${jaFormatted}${suffix}`;
-  };
-}
-
-/**
- * Creates a character incrementer.
- * Supports patterns like ①, Ⅰ, `(a)` and `ア`.
- */
-export function createCharacterIncrementer(source: string): Incrementer | undefined {
-  const characterSets = [
-    "abcdefghijklmnopqrstuvwxyz",
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ",
-    "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ",
-    "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚",
-    "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ",
-    "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
-    "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
-    "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ"
-  ];
-
-  for (const set of characterSets) {
-    const members = [...set];
-    for (const [startIndex, member] of members.entries()) {
-      const match = new RegExp(`^(.*?)${member}(.*)$`, "u").exec(source);
-      if (match) {
-        const [, prefix, suffix] = match;
-        return (index: number) => `${prefix}${members[(startIndex + index) % members.length]}${suffix}`;
+    for (const set of characterSets) {
+      const members = [...set];
+      for (const [startIndex, member] of members.entries()) {
+        const match = new RegExp(`^(.*?)${member}(.*)$`, "u").exec(source);
+        if (match) {
+          const [, prefix, suffix] = match;
+          return (index: number) => `${prefix}${members[(startIndex + index) % members.length]}${suffix}`;
+        }
       }
     }
-  }
 
-  return undefined;
-}
-
-/**
- * Creates an incrementer that simply repeats the source text (fallback).
- */
-export function createOnlyRepeatFormatter(source: string): Incrementer | undefined {
-  if (source.length === 0) {
     return undefined;
   }
 
-  return (_index: number) => source;
+  /**
+   * Creates an incrementer that simply repeats the source text (fallback).
+   */
+  static createOnlyRepeatFormatter(source: string): Incrementer | undefined {
+    if (source.length === 0) {
+      return undefined;
+    }
+
+    return (_index: number) => source;
+  }
 }

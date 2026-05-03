@@ -1,19 +1,23 @@
 import type { Incrementer } from "./incrementer";
 
-import * as factory from "./incrementer-factory";
-import * as datetimeFactory from "./incrementer-factory-datetime";
+import IncrementerFactory from "./incrementer-factory";
+import DatetimeIncrementerFactory from "./incrementer-factory-datetime";
 
 /**
  * Detects an incrementer from the source text.
  */
 export function detectIncrementer(source: string): Incrementer | undefined {
   return (
-    datetimeFactory.createDateTimeIncrementer(source) ??
-    datetimeFactory.createDateIncrementer(source) ??
-    datetimeFactory.createTimeIncrementer(source) ??
-    factory.createNumericIncrementer(source) ??
-    factory.createJapaneseNumericIncrementer(source) ??
-    factory.createCharacterIncrementer(source) ??
-    factory.createOnlyRepeatFormatter(source)
+    DatetimeIncrementerFactory.createFullDateTimeIncrementer(source) ??
+    DatetimeIncrementerFactory.createYmdIncrementer(source) ??
+    DatetimeIncrementerFactory.createMdydIncrementer(source) ??
+    DatetimeIncrementerFactory.createMdIncrementer(source) ??
+    DatetimeIncrementerFactory.createYmIncrementer(source) ??
+    DatetimeIncrementerFactory.createTimeWithSecondIncrementer(source) ??
+    DatetimeIncrementerFactory.createTimeWithoutSecondIncrementer(source) ??
+    IncrementerFactory.createJapaneseNumericIncrementer(source) ??
+    IncrementerFactory.createCharacterIncrementer(source) ??
+    IncrementerFactory.createNumericIncrementer(source) ??
+    IncrementerFactory.createOnlyRepeatFormatter(source)
   );
 }

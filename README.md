@@ -176,14 +176,6 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ```
 
 ```text
-20261230
-20261231
-20270101
-20270102
-...
-```
-
-```text
 2026/8
 2026/9
 2026/10
@@ -196,14 +188,6 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 2026/12
 2027/01
 2027/02
-...
-```
-
-```text
-202611
-202612
-202701
-202702
 ...
 ```
 

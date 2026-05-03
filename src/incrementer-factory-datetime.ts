@@ -2,31 +2,115 @@ import type { Incrementer } from "./incrementer";
 
 type DateSeparator = "/" | "-";
 
-type DateShape =
-  | { kind: "ymd-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: DateSeparator }
-  | { kind: "mdy-separated"; yearWidth: number; monthWidth: number; dayWidth: number; separator: DateSeparator }
-  | { kind: "md-separated"; monthWidth: number; dayWidth: number; separator: DateSeparator }
-  | { kind: "ym-separated"; yearWidth: number; monthWidth: number; separator: DateSeparator }
-  | { kind: "ymd-compact" }
-  | { kind: "ym-compact" };
-
-type TimeShape = { withSeconds: boolean; hourWidth: number; minuteWidth: number; secondWidth?: number };
-
-type DateTimeShape = {
-  date: Extract<DateShape, { kind: "ymd-separated" }>;
-  time: Required<TimeShape>;
-  separator: string;
-};
-
 /**
- * Creates a date incrementer.
- * Supports patterns like `2026/04/29`, `2026-04-29`, `2026/4/29`, `20260429`, `04/29/2026`, `04-29-2026`, `2026/04`, `2026-04` and `202604`.
+ * Creates date and time incrementers.
  */
-export function createDateIncrementer(source: string): Incrementer | undefined {
-  const monthDayMatch = /^(\d{1,2})([\/-])(\d{1,2})$/u.exec(source);
-  if (monthDayMatch) {
-    const [, monthText, separatorText, dayText] = monthDayMatch;
+export default class DatetimeIncrementerFactory {
+  /**
+   * Creates a date-time incrementer.
+   * Supports patterns like `2026/12/31 23:59:58` and `2026-12-31 23:59:58`.
+   */
+  static createFullDateTimeIncrementer(source: string): Incrementer | undefined {
+    const match = /^(\d{4})([\/-])(\d{1,2})\2(\d{1,2})(\s+)(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, yearText, dateSeparatorText, monthText, dayText, separator, hourText, minuteText, secondText] = match;
+    const dateSeparator = asDateSeparator(dateSeparatorText);
+    const year = Number(yearText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    const second = Number(secondText);
+
+    if (!isValidDate(year, month, day) || !isValidDateTimeTime(hour, minute, second)) {
+      return undefined;
+    }
+
+    const start = Date.UTC(year, month - 1, day, hour, minute, second);
+    return (index: number) => {
+      const value = new Date(start + index * 1000);
+      return (
+        formatYmdDate(value, dateSeparator, yearText.length, monthText.length, dayText.length) +
+        separator +
+        formatTime(value, hourText.length, minuteText.length, secondText.length)
+      );
+    };
+  }
+
+  /**
+   * Creates a year-month-day incrementer.
+   * Supports patterns like `2026/04/29`, `2026-04-29` and `2026/4/29`.
+   */
+  static createYmdIncrementer(source: string): Incrementer | undefined {
+    const match = /^(\d{4})([\/-])(\d{1,2})\2(\d{1,2})$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, yearText, separatorText, monthText, dayText] = match;
+    const year = Number(yearText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    if (!isValidDate(year, month, day)) {
+      return undefined;
+    }
+
+    const start = new Date(Date.UTC(year, month - 1, day));
     const separator = asDateSeparator(separatorText);
+    return (index: number) =>
+      formatYmdDate(
+        addDays(start, index),
+        separator,
+        yearText.length,
+        getDatePartWidth(monthText),
+        getDatePartWidth(dayText, monthText)
+      );
+  }
+
+  /**
+   * Creates a month-day-year incrementer.
+   * Supports patterns like `04/29/2026`, `04-29-2026` and `4/29/2026`.
+   */
+  static createMdydIncrementer(source: string): Incrementer | undefined {
+    const match = /^(\d{1,2})([\/-])(\d{1,2})\2(\d{4})$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, monthText, separatorText, dayText, yearText] = match;
+    const year = Number(yearText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    if (!isValidDate(year, month, day)) {
+      return undefined;
+    }
+
+    const start = new Date(Date.UTC(year, month - 1, day));
+    const separator = asDateSeparator(separatorText);
+    return (index: number) =>
+      formatMdyDate(
+        addDays(start, index),
+        separator,
+        getDatePartWidth(monthText),
+        getDatePartWidth(dayText, monthText),
+        yearText.length
+      );
+  }
+
+  /**
+   * Creates a month-day incrementer.
+   * Supports patterns like `04/29` and `4/29`.
+   */
+  static createMdIncrementer(source: string): Incrementer | undefined {
+    const match = /^(\d{1,2})([\/-])(\d{1,2})$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, monthText, separatorText, dayText] = match;
     const month = Number(monthText);
     const day = Number(dayText);
     if (!isValidMonthDay(month, day)) {
@@ -34,112 +118,50 @@ export function createDateIncrementer(source: string): Incrementer | undefined {
     }
 
     const start = new Date(Date.UTC(1970, month - 1, day));
-    const shape: DateShape = {
-      kind: "md-separated",
-      monthWidth: getDatePartWidth(monthText),
-      dayWidth: getDatePartWidth(dayText, monthText),
-      separator
-    };
-    return (index: number) => formatDate(addDays(start, index), shape);
+    const separator = asDateSeparator(separatorText);
+    return (index: number) =>
+      formatMdDate(
+        addDays(start, index),
+        separator,
+        getDatePartWidth(monthText),
+        getDatePartWidth(dayText, monthText)
+      );
   }
 
-  const yearMonthMatch = /^(\d{4})([\/-])(\d{1,2})$/u.exec(source);
-  if (yearMonthMatch && Number(yearMonthMatch[1]) >= 1970) {
-    const [, yearText, separatorText, monthText] = yearMonthMatch;
-    const separator = asDateSeparator(separatorText);
+  /**
+   * Creates a year-month incrementer.
+   * Supports patterns like `2026/04`, `2026-04` and `2026/4`.
+   */
+  static createYmIncrementer(source: string): Incrementer | undefined {
+    const match = /^(\d{4})([\/-])(\d{1,2})$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, yearText, separatorText, monthText] = match;
     const year = Number(yearText);
     const month = Number(monthText);
-    if (month < 1 || month > 12) {
+    if (year < 1970 || month < 1 || month > 12) {
       return undefined;
     }
 
     const start = new Date(Date.UTC(year, month - 1, 1));
-    const shape: DateShape = {
-      kind: "ym-separated",
-      yearWidth: yearText.length,
-      monthWidth: getDatePartWidth(monthText),
-      separator
-    };
-    return (index: number) => formatDate(addMonths(start, index), shape);
-  }
-
-  const separatedMatch = /^(\d{1,4})([\/-])(\d{1,2})\2(\d{1,4})$/u.exec(source);
-  if (separatedMatch) {
-    const [, part1, separatorText, part2, part3] = separatedMatch;
     const separator = asDateSeparator(separatorText);
-    if (part1.length === 4 && Number(part1) >= 1970) {
-      const year = Number(part1);
-      const month = Number(part2);
-      const day = Number(part3);
-      if (!isValidDate(year, month, day)) {
-        return undefined;
-      }
-
-      const start = new Date(Date.UTC(year, month - 1, day));
-      const shape: DateShape = {
-        kind: "ymd-separated",
-        yearWidth: part1.length,
-        monthWidth: getDatePartWidth(part2),
-        dayWidth: getDatePartWidth(part3, part2),
-        separator
-      };
-      return (index: number) => formatDate(addDays(start, index), shape);
-    }
-
-    if (part3.length === 4 && Number(part3) >= 1970) {
-      const month = Number(part1);
-      const day = Number(part2);
-      const year = Number(part3);
-      if (!isValidDate(year, month, day)) {
-        return undefined;
-      }
-
-      const start = new Date(Date.UTC(year, month - 1, day));
-      const shape: DateShape = {
-        kind: "mdy-separated",
-        yearWidth: part3.length,
-        monthWidth: getDatePartWidth(part1),
-        dayWidth: getDatePartWidth(part2, part1),
-        separator
-      };
-      return (index: number) => formatDate(addDays(start, index), shape);
-    }
+    return (index: number) =>
+      formatYmDate(addMonths(start, index), separator, yearText.length, getDatePartWidth(monthText));
   }
 
-  if (/^\d{8}$/u.test(source) && Number(source.slice(0, 4)) >= 1970) {
-    const year = Number(source.slice(0, 4));
-    const month = Number(source.slice(4, 6));
-    const day = Number(source.slice(6, 8));
-    if (!isValidDate(year, month, day)) {
+  /**
+   * Creates a time incrementer with seconds.
+   * Supports patterns like `23:59:58`.
+   */
+  static createTimeWithSecondIncrementer(source: string): Incrementer | undefined {
+    const match = /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
+    if (!match) {
       return undefined;
     }
 
-    const start = new Date(Date.UTC(year, month - 1, day));
-    return (index: number) => formatDate(addDays(start, index), { kind: "ymd-compact" });
-  }
-
-  if (/^\d{6}$/u.test(source) && Number(source.slice(0, 4)) >= 1970) {
-    const year = Number(source.slice(0, 4));
-    const month = Number(source.slice(4, 6));
-    if (month < 1 || month > 12) {
-      return undefined;
-    }
-
-    const start = new Date(Date.UTC(year, month - 1, 1));
-    return (index: number) => formatDate(addMonths(start, index), { kind: "ym-compact" });
-  }
-
-  return undefined;
-}
-
-/**
- * Creates a time incrementer.
- * Supports patterns like `23:59:58` and `23:58`.
- */
-export function createTimeIncrementer(source: string): Incrementer | undefined {
-  const hourMinuteSecond = /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
-  if (hourMinuteSecond) {
-    const [, hourText, minuteText, secondText] = hourMinuteSecond;
+    const [, hourText, minuteText, secondText] = match;
     const hour = Number(hourText);
     const minute = Number(minuteText);
     const second = Number(secondText);
@@ -148,87 +170,29 @@ export function createTimeIncrementer(source: string): Incrementer | undefined {
     }
 
     const start = new Date(Date.UTC(1970, 0, 1, hour, minute, second));
-    const shape: TimeShape = {
-      withSeconds: true,
-      hourWidth: hourText.length,
-      minuteWidth: minuteText.length,
-      secondWidth: secondText.length
-    };
-    return (index: number) => formatTime(addSeconds(start, index), shape);
+    return (index: number) => formatTime(addSeconds(start, index), hourText.length, minuteText.length, secondText.length);
   }
 
-  const hourMinute = /^(\d{1,2}):(\d{1,2})$/u.exec(source);
-  if (!hourMinute) {
-    return undefined;
+  /**
+   * Creates a time incrementer without seconds.
+   * Supports patterns like `23:58`.
+   */
+  static createTimeWithoutSecondIncrementer(source: string): Incrementer | undefined {
+    const match = /^(\d{1,2}):(\d{1,2})$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, hourText, minuteText] = match;
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    if (!isValidTime(hour, minute, 0)) {
+      return undefined;
+    }
+
+    const start = new Date(Date.UTC(1970, 0, 1, hour, minute, 0));
+    return (index: number) => formatTime(addMinutes(start, index), hourText.length, minuteText.length);
   }
-
-  const [, hourText, minuteText] = hourMinute;
-  const hour = Number(hourText);
-  const minute = Number(minuteText);
-  if (!isValidTime(hour, minute, 0)) {
-    return undefined;
-  }
-
-  const start = new Date(Date.UTC(1970, 0, 1, hour, minute, 0));
-  const shape: TimeShape = {
-    withSeconds: false,
-    hourWidth: hourText.length,
-    minuteWidth: minuteText.length
-  };
-  return (index: number) => formatTime(addMinutes(start, index), shape);
-}
-
-/**
- * Creates a date-time incrementer.
- * Supports patterns like `2026/12/31 23:59:58` and `2026-12-31 23:59:58`.
- */
-export function createDateTimeIncrementer(source: string): Incrementer | undefined {
-  const match = /^(\d{4})([\/-])(\d{1,2})\2(\d{1,2})(\s+)(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
-  if (!match) {
-    return undefined;
-  }
-
-  const [, yearText, dateSeparatorText, monthText, dayText, separator, hourText, minuteText, secondText] = match;
-  const dateSeparator = asDateSeparator(dateSeparatorText);
-  const year = Number(yearText);
-  const month = Number(monthText);
-  const day = Number(dayText);
-  const hour = Number(hourText);
-  const minute = Number(minuteText);
-  const second = Number(secondText);
-
-  if (!isValidDate(year, month, day)) {
-    return undefined;
-  }
-
-  const dateShape: Extract<DateShape, { kind: "ymd-separated" }> = {
-    kind: "ymd-separated",
-    yearWidth: yearText.length,
-    monthWidth: monthText.length,
-    dayWidth: dayText.length,
-    separator: dateSeparator
-  };
-
-  if (!isValidDateTimeTime(hour, minute, second)) {
-    return undefined;
-  }
-
-  const start = Date.UTC(year, month - 1, day, hour, minute, second);
-  const shape: DateTimeShape = {
-    date: dateShape,
-    time: {
-      withSeconds: true,
-      hourWidth: hourText.length,
-      minuteWidth: minuteText.length,
-      secondWidth: secondText.length
-    },
-    separator
-  };
-
-  return (index: number) => {
-    const value = new Date(start + index * 1000);
-    return formatDateTime(value, shape);
-  };
 }
 
 function addDays(date: Date, amount: number): Date {
@@ -247,45 +211,43 @@ function addSeconds(date: Date, amount: number): Date {
   return new Date(date.getTime() + amount * 1000);
 }
 
-function formatDate(date: Date, shape: DateShape): string {
-  const year = String(date.getUTCFullYear());
-  const month = String(date.getUTCMonth() + 1);
-  const day = String(date.getUTCDate());
-
-  switch (shape.kind) {
-    case "ymd-separated":
-      return [
-        year.padStart(shape.yearWidth, "0"),
-        month.padStart(shape.monthWidth, "0"),
-        day.padStart(shape.dayWidth, "0")
-      ].join(shape.separator);
-    case "mdy-separated":
-      return [
-        month.padStart(shape.monthWidth, "0"),
-        day.padStart(shape.dayWidth, "0"),
-        year.padStart(shape.yearWidth, "0")
-      ].join(shape.separator);
-    case "md-separated":
-      return [month.padStart(shape.monthWidth, "0"), day.padStart(shape.dayWidth, "0")].join(shape.separator);
-    case "ym-separated":
-      return `${year.padStart(shape.yearWidth, "0")}${shape.separator}${month.padStart(shape.monthWidth, "0")}`;
-    case "ymd-compact":
-      return `${year.padStart(4, "0")}${month.padStart(2, "0")}${day.padStart(2, "0")}`;
-    case "ym-compact":
-      return `${year.padStart(4, "0")}${month.padStart(2, "0")}`;
-  }
+function formatYmdDate(date: Date, separator: DateSeparator, yearWidth: number, monthWidth: number, dayWidth: number): string {
+  return [
+    String(date.getUTCFullYear()).padStart(yearWidth, "0"),
+    String(date.getUTCMonth() + 1).padStart(monthWidth, "0"),
+    String(date.getUTCDate()).padStart(dayWidth, "0")
+  ].join(separator);
 }
 
-function formatDateTime(date: Date, shape: DateTimeShape): string {
-  return formatDate(date, shape.date) + shape.separator + formatTime(date, shape.time);
+function formatMdyDate(date: Date, separator: DateSeparator, monthWidth: number, dayWidth: number, yearWidth: number): string {
+  return [
+    String(date.getUTCMonth() + 1).padStart(monthWidth, "0"),
+    String(date.getUTCDate()).padStart(dayWidth, "0"),
+    String(date.getUTCFullYear()).padStart(yearWidth, "0")
+  ].join(separator);
 }
 
-function formatTime(date: Date, shape: TimeShape): string {
-  const hour = String(date.getUTCHours()).padStart(shape.hourWidth, "0");
-  const minute = String(date.getUTCMinutes()).padStart(shape.minuteWidth, "0");
+function formatMdDate(date: Date, separator: DateSeparator, monthWidth: number, dayWidth: number): string {
+  return [
+    String(date.getUTCMonth() + 1).padStart(monthWidth, "0"),
+    String(date.getUTCDate()).padStart(dayWidth, "0")
+  ].join(separator);
+}
 
-  if (shape.withSeconds) {
-    const second = String(date.getUTCSeconds()).padStart(shape.secondWidth ?? 2, "0");
+function formatYmDate(date: Date, separator: DateSeparator, yearWidth: number, monthWidth: number): string {
+  return (
+    String(date.getUTCFullYear()).padStart(yearWidth, "0") +
+    separator +
+    String(date.getUTCMonth() + 1).padStart(monthWidth, "0")
+  );
+}
+
+function formatTime(date: Date, hourWidth: number, minuteWidth: number, secondWidth?: number): string {
+  const hour = String(date.getUTCHours()).padStart(hourWidth, "0");
+  const minute = String(date.getUTCMinutes()).padStart(minuteWidth, "0");
+
+  if (secondWidth !== undefined) {
+    const second = String(date.getUTCSeconds()).padStart(secondWidth, "0");
     return `${hour}:${minute}:${second}`;
   }
 
