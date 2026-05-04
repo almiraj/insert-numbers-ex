@@ -165,9 +165,10 @@ export default class DatetimeIncrementerFactory {
   /**
    * Creates a time incrementer with seconds.
    * Supports patterns like `23:59:58`.
+   * Does not support patterns like `1:59:58` or `23:59:1`.
    */
   static createTimeWithSecondIncrementer(source: string): Incrementer | undefined {
-    const match = /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/u.exec(source);
+    const match = /^(\d{2}):(\d{2}):(\d{2})$/u.exec(source);
     if (!match) {
       return undefined;
     }
@@ -193,10 +194,11 @@ export default class DatetimeIncrementerFactory {
 
   /**
    * Creates a time incrementer without seconds.
-   * Supports patterns like `23:58`.
+   * Supports patterns like `1:58` and `23:58`.
+   * Does not support patterns like `1:1` or `23:1`.
    */
   static createTimeWithoutSecondIncrementer(source: string): Incrementer | undefined {
-    const match = /^(\d{1,2}):(\d{1,2})$/u.exec(source);
+    const match = /^(\d{1,2}):(\d{2})$/u.exec(source);
     if (!match) {
       return undefined;
     }
