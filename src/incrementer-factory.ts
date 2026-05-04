@@ -29,6 +29,7 @@ export default class IncrementerFactory {
   /**
    * Creates a Japanese numeric incrementer.
    * Supports patterns like `０`, `１`, `１０` and `０１`.
+   * Returns `undefined` when `0-9` appears before supported `０-９`.
    */
   static createJapaneseNumericIncrementer(source: string): Incrementer | undefined {
     const japaneseNumericDigits = "０１２３４５６７８９";
@@ -56,6 +57,7 @@ export default class IncrementerFactory {
   /**
    * Creates a character incrementer.
    * Supports patterns like ①, Ⅰ, `(a)` and `ア`.
+   * Returns `undefined` when `0-9` or `０-９` appears before a supported character.
    */
   static createCharacterIncrementer(source: string): Incrementer | undefined {
     const charMemberSets = [
