@@ -159,9 +159,12 @@ it("repeats unsupported non-empty input without looping", () => {
 describe("detection order", () => {
   const examples = [
     ["1a", "2a"],
+    ["11a", "12a"],
     ["a1", "b1"],
     ["０1", "１1"],
+    ["０１1", "０２1"],
     ["0１", "1１"],
+    ["01１", "02１"],
     ["__１", "__２"],
     ["ab１", "bb１"],
     ["1Ａ", "2Ａ"],
