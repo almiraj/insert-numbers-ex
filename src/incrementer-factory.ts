@@ -28,20 +28,23 @@ export default class IncrementerFactory {
 
   /**
    * Creates a Japanese numeric incrementer.
-   * Supports patterns like `０`, `１`, `１０` and `０１`.
+   * Supports patterns like `０`, `１`, `【１】`, `１０` and `０１`.
    * Returns `undefined` when `0-9` appears before supported `０-９`.
    */
   static createJapaneseNumericIncrementer(source: string): Incrementer | undefined {
     const japaneseNumericDigits = "０１２３４５６７８９";
 
-    const match = /^([^\d０-９]*)([０-９]+)(.*)$/u.exec(source);
+    const match = /^([^０-９]*)([０-９]+)(.*)$/u.exec(source);
     if (!match) {
       return undefined;
     }
 
     const [, prefix, jaDigits, suffix] = match;
-    const digits = jaDigits.normalize("NFKC");
+    if (/\d/u.test(prefix)) {
+      return undefined;
+    }
 
+    const digits = jaDigits.normalize("NFKC");
     const start = Number.parseInt(digits, 10);
     const width = digits.length;
     const padded = digits.startsWith("0") && width > 1;
