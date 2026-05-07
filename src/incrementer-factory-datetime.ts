@@ -163,6 +163,34 @@ export default class DatetimeIncrementerFactory {
   }
 
   /**
+   * Creates a month-year incrementer.
+   * Supports patterns like `04/2026`, `04-2026`, `4/2026` and `4-2026`.
+   */
+  static createMyIncrementer(source: string): Incrementer | undefined {
+    const match = /^(\d{1,2})([\/-])(\d{4})$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, monthText, separatorText, yearText] = match;
+    const year = Number(yearText);
+    const month = Number(monthText);
+    if (year < 1970 || month < 1 || month > 12) {
+      return undefined;
+    }
+
+    const start = new Date(Date.UTC(year, month - 1, 1));
+    const monthPaddingWidth = getDatePartPaddingWidth(monthText);
+    return (index: number) => {
+      const incrementedDate = addMonths(start, index);
+      return [
+        String(incrementedDate.getUTCMonth() + 1).padStart(monthPaddingWidth, "0"),
+        String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0")
+      ].join(separatorText);
+    };
+  }
+
+  /**
    * Creates a time incrementer with seconds.
    * Supports patterns like `23:59:58`.
    * Does not support patterns like `1:59:58` or `23:59:1`.

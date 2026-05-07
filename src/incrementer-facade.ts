@@ -13,6 +13,7 @@ export function detectIncrementer(source: string): Incrementer | undefined {
     DatetimeIncrementerFactory.createMdydIncrementer(source) ??
     DatetimeIncrementerFactory.createMdIncrementer(source) ??
     DatetimeIncrementerFactory.createYmIncrementer(source) ??
+    DatetimeIncrementerFactory.createMyIncrementer(source) ??
     DatetimeIncrementerFactory.createTimeWithSecondIncrementer(source) ??
     DatetimeIncrementerFactory.createTimeWithoutSecondIncrementer(source) ??
     IncrementerFactory.createCharacterIncrementer(source) ??

@@ -192,6 +192,21 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ```
 
 ```text
+8/2026
+9/2026
+10/2026
+11/2026
+...
+```
+```text
+11/2026
+12/2026
+01/2027
+02/2027
+...
+```
+
+```text
 23:59:58
 23:59:59
 00:00:00
