@@ -2,12 +2,13 @@
 
 ## Insert Numbers for Visual Studio Code
 
-[![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23ea4aaa)](https://github.com/sponsors/almiraj/) - *If my work saves you time, consider supporting me!*
+[![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23ea4aaa)](https://github.com/sponsors/almiraj/)
 
 An extension to insert increasing numbers.
 
-<video controls poster="./media/demo.svg" width="960">
+<video controls width="960">
   <source src="./media/demo.mp4" type="video/mp4">
+  <a href="./media/demo.mp4">View demo video</a>
 </video>
 
 ## Usage
