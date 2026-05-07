@@ -64,6 +64,14 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ```
 
 ```text
+a
+b
+c
+d
+...
+```
+
+```text
 Ⅰ
 Ⅱ
 Ⅲ
@@ -84,14 +92,6 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ②
 ③
 ④
-...
-```
-
-```text
-(a)
-(b)
-(c)
-(d)
 ...
 ```
 
