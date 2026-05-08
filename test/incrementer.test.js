@@ -18,6 +18,7 @@ describe("README examples", () => {
     ["0", ["0", "1", "2", "3"]],
     ["1", ["1", "2", "3", "4"]],
     ["01", ["01", "02", "03", "04"]],
+    ["0x0e", ["0x0e", "0x0f", "0x10", "0x11"]],
     ["1_", ["1_", "2_", "3_", "4_"]],
     ["[1]", ["[1]", "[2]", "[3]", "[4]"]],
     ["a", ["a", "b", "c", "d"]],
@@ -75,6 +76,43 @@ describe("numberic", () => {
       assert.deepEqual(incrementFor(source, 4), expected);
     });
   }
+});
+
+describe("hexadecimal", () => {
+  const examples = [
+    ["0x0e", ["0x0e", "0x0f", "0x10", "0x11"]],
+    ["0x0E", ["0x0E", "0x0F", "0x10", "0x11"]],
+    ["0X0E", ["0X0E", "0X0F", "0X10", "0X11"]],
+    ["[0x0e]", ["[0x0e]", "[0x0f]", "[0x10]", "[0x11]"]]
+  ];
+
+  for (const [source, expected] of examples) {
+    it(`formats ${source}`, () => {
+      assert.deepEqual(incrementFor(source, 4), expected);
+    });
+  }
+
+  it("formats a longer sequence across hexadecimal digits", () => {
+    assert.deepEqual(incrementFor("0x0e", 17), [
+      "0x0e",
+      "0x0f",
+      "0x10",
+      "0x11",
+      "0x12",
+      "0x13",
+      "0x14",
+      "0x15",
+      "0x16",
+      "0x17",
+      "0x18",
+      "0x19",
+      "0x1a",
+      "0x1b",
+      "0x1c",
+      "0x1d",
+      "0x1e"
+    ]);
+  });
 });
 
 describe("japanese numberic", () => {

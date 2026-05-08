@@ -27,6 +27,30 @@ export default class IncrementerFactory {
   }
 
   /**
+   * Creates a hexadecimal incrementer.
+   * Supports patterns like `0x0f` and `0x0F`.
+   */
+  static createHexadecimalIncrementer(source: string): Incrementer | undefined {
+    const match = /^(.*?)(0[xX])([0-9a-fA-F]+)(.*)$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, prefix, hexPrefix, digits, suffix] = match;
+    const start = Number.parseInt(digits, 16);
+    const width = digits.length;
+    const padded = digits.startsWith("0") && width > 1;
+    const upper = shouldUseUppercaseHex(hexPrefix, digits);
+
+    return (index: number) => {
+      const rawValue = (start + index).toString(16);
+      const value = upper ? rawValue.toUpperCase() : rawValue;
+      const formatted = padded ? value.padStart(width, "0") : value;
+      return `${prefix}${hexPrefix}${formatted}${suffix}`;
+    };
+  }
+
+  /**
    * Creates a Japanese numeric incrementer.
    * Supports patterns like `０`, `１`, `【１】`, `１０` and `０１`.
    * Returns `undefined` when `0-9` appears before supported `０-９`.
@@ -107,4 +131,16 @@ export default class IncrementerFactory {
 
     return (_index: number) => source;
   }
+}
+
+function shouldUseUppercaseHex(prefix: string, digits: string): boolean {
+  if (/[A-F]/u.test(digits)) {
+    return true;
+  }
+
+  if (/[a-f]/u.test(digits)) {
+    return false;
+  }
+
+  return prefix === "0X";
 }

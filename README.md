@@ -1,6 +1,6 @@
 # README
 
-## Insert Numbers for Visual Studio Code
+## Insert Numbers Ex for Visual Studio Code
 
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23ea4aaa)](https://github.com/sponsors/almiraj/)
 
@@ -10,14 +10,18 @@ An extension to insert increasing numbers.
 
 ## Usage
 
-* Command: `Insert Numbers`
+* Command: `Insert Numbers Ex`
 * Keybindings: `ctrl+alt+n` on Windows and Linux or `cmd+alt+n` on macOS
 
-## Dedication
+## Settings
 
-This extension is dedicated to Asuka, with respect and gratitude.
+No settings required. No more `settings.json`.
 
-I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?itemName=Asuka.insertnumbers), and this project is a small tribute to that work.
+## Thanks
+
+Thanks to Asuka for the original [Insert Numbers](https://marketplace.visualstudio.com/items?itemName=Asuka.insertnumbers) extension, which I have long loved.
+
+This project is a small tribute to that work.
 
 ## Examples
 
@@ -46,10 +50,10 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ```
 
 ```text
-1_
-2_
-3_
-4_
+ 8
+ 9
+10
+11
 ...
 ```
 
@@ -62,10 +66,18 @@ I have long loved [Insert Numbers](https://marketplace.visualstudio.com/items?it
 ```
 
 ```text
-a
-b
-c
-d
+0x0e
+0x0f
+0x10
+0x11
+...
+```
+
+```text
+(a)
+(b)
+(c)
+(d)
 ...
 ```
 
