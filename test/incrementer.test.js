@@ -118,6 +118,7 @@ describe("parsing month names as date", () => {
     ["nov", ["nov", "dec", "jan", "feb"]],
     ["NOV", ["NOV", "DEC", "JAN", "FEB"]],
     ["Apr", ["Apr", "May", "Jun", "Jul"]],
+    ["Sep", ["Sep", "Oct", "Nov", "Dec"]],
     ["Sept", ["Sept", "Oct", "Nov", "Dec"]],
     ["Nov/2026", ["Nov/2026", "Dec/2026", "Jan/2027", "Feb/2027"]],
     ["November/2026", ["November/2026", "December/2026", "January/2027", "February/2027"]],
@@ -140,6 +141,21 @@ describe("parsing month names as date", () => {
   for (const [source, expected] of examples) {
     it(`formats ${source}`, () => {
       assert.deepEqual(incrementFor(source, 4), expected);
+    });
+  }
+});
+
+describe("parsing month names as date (for Sept)", () => {
+  const examples = [
+    ["Sep", ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"]],
+    ["Sept", ["Sept", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct"]],
+    ["Sep 2026", ["Sep 2026", "Oct 2026", "Nov 2026", "Dec 2026", "Jan 2027", "Feb 2027", "Mar 2027", "Apr 2027", "May 2027", "Jun 2027", "Jul 2027", "Aug 2027", "Sep 2027", "Oct 2027"]],
+    ["Sept 2026", ["Sept 2026", "Oct 2026", "Nov 2026", "Dec 2026", "Jan 2027", "Feb 2027", "Mar 2027", "Apr 2027", "May 2027", "Jun 2027", "Jul 2027", "Aug 2027", "Sept 2027", "Oct 2027"]]
+  ];
+
+  for (const [source, expected] of examples) {
+    it(`formats ${source}`, () => {
+      assert.deepEqual(incrementFor(source, 14), expected);
     });
   }
 });
