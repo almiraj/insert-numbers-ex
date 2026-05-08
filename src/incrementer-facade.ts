@@ -2,6 +2,7 @@ import type { Incrementer } from "./incrementer";
 
 import IncrementerFactory from "./incrementer-factory";
 import DatetimeIncrementerFactory from "./incrementer-factory-datetime";
+import DatetimeNamedIncrementerFactory from "./incrementer-factory-datetime-named";
 
 /**
  * Detects an incrementer from the source text.
@@ -12,14 +13,14 @@ export function detectIncrementer(source: string): Incrementer | undefined {
     DatetimeIncrementerFactory.createYmdIncrementer(source) ??
     DatetimeIncrementerFactory.createMdydIncrementer(source) ??
     DatetimeIncrementerFactory.createMdIncrementer(source) ??
-    DatetimeIncrementerFactory.createMonthNameDateIncrementer(source) ??
-    DatetimeIncrementerFactory.createMonthNameDayIncrementer(source) ??
     DatetimeIncrementerFactory.createYmIncrementer(source) ??
     DatetimeIncrementerFactory.createMyIncrementer(source) ??
-    DatetimeIncrementerFactory.createMonthNameYearIncrementer(source) ??
-    DatetimeIncrementerFactory.createMonthNameIncrementer(source) ??
     DatetimeIncrementerFactory.createTimeWithSecondIncrementer(source) ??
     DatetimeIncrementerFactory.createTimeWithoutSecondIncrementer(source) ??
+    DatetimeNamedIncrementerFactory.createNamedMonthDateIncrementer(source) ??
+    DatetimeNamedIncrementerFactory.createNamedMonthDayIncrementer(source) ??
+    DatetimeNamedIncrementerFactory.createNamedMonthYearIncrementer(source) ??
+    DatetimeNamedIncrementerFactory.createNamedMonthIncrementer(source) ??
     IncrementerFactory.createCharacterIncrementer(source) ??
     IncrementerFactory.createJapaneseNumericIncrementer(source) ??
     IncrementerFactory.createNumericIncrementer(source) ??
