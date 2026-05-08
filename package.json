@@ -1,6 +1,6 @@
 {
-  "name": "insert-numbers",
-  "displayName": "Insert Numbers",
+  "name": "insert-numbers-ex",
+  "displayName": "Insert Numbers Ex",
   "description": "An extension to insert increasing numbers.",
   "version": "1.0.0",
   "publisher": "almiraj",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/almiraj/insert-numbers"
+    "url": "https://github.com/almiraj/insert-numbers-ex"
   },
   "engines": {
     "vscode": "^1.90.0"
@@ -17,19 +17,19 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:insert-numbers.insertNumbers"
+    "onCommand:insert-numbers-ex.insertNumbersEx"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "insert-numbers.insertNumbers",
-        "title": "Insert Numbers"
+        "command": "insert-numbers-ex.insertNumbersEx",
+        "title": "Insert Numbers Ex"
       }
     ],
     "keybindings": [
       {
-        "command": "insert-numbers.insertNumbers",
+        "command": "insert-numbers-ex.insertNumbersEx",
         "key": "ctrl+alt+n",
         "mac": "cmd+alt+n",
         "when": "editorTextFocus"
