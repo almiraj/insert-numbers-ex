@@ -2,22 +2,22 @@ import * as vscode from "vscode";
 import { detectIncrementer } from "./incrementer-facade";
 
 /**
- * Activates the Insert Numbers extension.
+ * Activates the Insert Number extension.
  */
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(PREVIEW_DECORATION);
   context.subscriptions.push(
-    vscode.commands.registerCommand("insert-numbers.insertNumbers", async () => {
+    vscode.commands.registerCommand("insert-number.insertNumber", async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
-        void vscode.window.showInformationMessage("Insert Numbers requires an active editor.");
+        void vscode.window.showInformationMessage("Insert Number requires an active editor.");
         return;
       }
 
       const inputBox = vscode.window.createInputBox();
-      inputBox.title = "Insert Numbers";
-      inputBox.prompt = "Support: 0, 1, 01, [1], a, ①, 2026-12-31 23:59:58";
-      inputBox.placeholder = "0, 1, 01, [1], a, ①, 2026-12-31 23:59:58";
+      inputBox.title = "Insert Number";
+      inputBox.prompt = "Support: 0, 1, 01, [1], a, ①, Nov, Nov 30, 2026-12-31 23:59:58";
+      inputBox.placeholder = "0, 1, 01, [1], a, ①, Nov, Nov 30, 2026-12-31 23:59:58";
       inputBox.ignoreFocusOut = true;
 
       const clearPreview = () => {
@@ -72,7 +72,7 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 /**
- * Deactivates the Insert Numbers extension.
+ * Deactivates the Insert Number extension.
  */
 export function deactivate(): void {}
 

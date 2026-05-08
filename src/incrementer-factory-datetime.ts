@@ -5,6 +5,146 @@ import type { Incrementer } from "./incrementer";
  */
 export default class DatetimeIncrementerFactory {
   /**
+   * Creates a month-name incrementer.
+   * Supports patterns like `Nov`, `November`, `nov` and `NOV`.
+   */
+  static createMonthNameIncrementer(source: string): Incrementer | undefined {
+    const month = parseMonthName(source);
+    if (!month) {
+      return undefined;
+    }
+
+    const start = new Date(Date.UTC(1970, month.index, 1));
+    return (index: number) => formatMonthName(addMonths(start, index).getUTCMonth(), month);
+  }
+
+  /**
+   * Creates a month-name-year incrementer.
+   * Supports patterns like `Nov/2026`, `Nov 2026`, `2026/Nov` and `2026 Nov`.
+   */
+  static createMonthNameYearIncrementer(source: string): Incrementer | undefined {
+    const monthFirst = new RegExp(`^(${MONTH_NAME_PATTERN})([\\/-]|\\s+)(\\d{4})$`, "u").exec(source);
+    if (monthFirst) {
+      const [, monthText, separatorText, yearText] = monthFirst;
+      const month = parseMonthName(monthText);
+      const year = Number(yearText);
+      if (!month || year < 1970) {
+        return undefined;
+      }
+
+      const start = new Date(Date.UTC(year, month.index, 1));
+      return (index: number) => {
+        const incrementedDate = addMonths(start, index);
+        return [
+          formatMonthName(incrementedDate.getUTCMonth(), month),
+          String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0")
+        ].join(separatorText);
+      };
+    }
+
+    const yearFirst = new RegExp(`^(\\d{4})([\\/-]|\\s+)(${MONTH_NAME_PATTERN})$`, "u").exec(source);
+    if (!yearFirst) {
+      return undefined;
+    }
+
+    const [, yearText, separatorText, monthText] = yearFirst;
+    const month = parseMonthName(monthText);
+    const year = Number(yearText);
+    if (!month || year < 1970) {
+      return undefined;
+    }
+
+    const start = new Date(Date.UTC(year, month.index, 1));
+    return (index: number) => {
+      const incrementedDate = addMonths(start, index);
+      return [
+        String(incrementedDate.getUTCFullYear()).padStart(yearText.length, "0"),
+        formatMonthName(incrementedDate.getUTCMonth(), month)
+      ].join(separatorText);
+    };
+  }
+
+  /**
+   * Creates a month-name-day incrementer.
+   * Supports patterns like `Nov 30`, `Nov-30`, `30 Nov` and `30-Nov`.
+   */
+  static createMonthNameDayIncrementer(source: string): Incrementer | undefined {
+    const monthFirst = new RegExp(`^(${MONTH_NAME_PATTERN})([\\/-]|\\s+)(\\d{1,2})$`, "u").exec(source);
+    if (monthFirst) {
+      const [, monthText, separatorText, dayText] = monthFirst;
+      return createMonthNameDayIncrementer(monthText, dayText, (date, month) =>
+        [formatMonthName(date.getUTCMonth(), month), String(date.getUTCDate())].join(separatorText)
+      );
+    }
+
+    const dayFirst = new RegExp(`^(\\d{1,2})([\\/-]|\\s+)(${MONTH_NAME_PATTERN})$`, "u").exec(source);
+    if (!dayFirst) {
+      return undefined;
+    }
+
+    const [, dayText, separatorText, monthText] = dayFirst;
+    return createMonthNameDayIncrementer(monthText, dayText, (date, month) =>
+      [String(date.getUTCDate()), formatMonthName(date.getUTCMonth(), month)].join(separatorText)
+    );
+  }
+
+  /**
+   * Creates a month-name date incrementer.
+   * Supports patterns like `Nov 30, 2026`, `Nov 30 2026`, `30 Nov 2026` and `2026 Nov 30`.
+   */
+  static createMonthNameDateIncrementer(source: string): Incrementer | undefined {
+    const monthDayYear = new RegExp(`^(${MONTH_NAME_PATTERN})([\\/-]|\\s+)(\\d{1,2})(,?\\s+|[\\/-])(\\d{4})$`, "u").exec(
+      source
+    );
+    if (monthDayYear) {
+      const [, monthText, firstSeparator, dayText, secondSeparator, yearText] = monthDayYear;
+      return createMonthNameDateIncrementer(monthText, dayText, yearText, (date, month) =>
+        joinThree(
+          formatMonthName(date.getUTCMonth(), month),
+          firstSeparator,
+          String(date.getUTCDate()),
+          secondSeparator,
+          String(date.getUTCFullYear()).padStart(yearText.length, "0")
+        )
+      );
+    }
+
+    const dayMonthYear = new RegExp(`^(\\d{1,2})([\\/-]|\\s+)(${MONTH_NAME_PATTERN})([\\/-]|\\s+)(\\d{4})$`, "u").exec(
+      source
+    );
+    if (dayMonthYear) {
+      const [, dayText, firstSeparator, monthText, secondSeparator, yearText] = dayMonthYear;
+      return createMonthNameDateIncrementer(monthText, dayText, yearText, (date, month) =>
+        joinThree(
+          String(date.getUTCDate()),
+          firstSeparator,
+          formatMonthName(date.getUTCMonth(), month),
+          secondSeparator,
+          String(date.getUTCFullYear()).padStart(yearText.length, "0")
+        )
+      );
+    }
+
+    const yearMonthDay = new RegExp(`^(\\d{4})([\\/-]|\\s+)(${MONTH_NAME_PATTERN})([\\/-]|\\s+)(\\d{1,2})$`, "u").exec(
+      source
+    );
+    if (!yearMonthDay) {
+      return undefined;
+    }
+
+    const [, yearText, firstSeparator, monthText, secondSeparator, dayText] = yearMonthDay;
+    return createMonthNameDateIncrementer(monthText, dayText, yearText, (date, month) =>
+      joinThree(
+        String(date.getUTCFullYear()).padStart(yearText.length, "0"),
+        firstSeparator,
+        formatMonthName(date.getUTCMonth(), month),
+        secondSeparator,
+        String(date.getUTCDate())
+      )
+    );
+  }
+
+  /**
    * Creates a date-time incrementer.
    * Supports patterns like `2026/12/31 23:59:58` and `2026-12-31 23:59:58`.
    */
@@ -247,6 +387,113 @@ export default class DatetimeIncrementerFactory {
       ].join(":");
     };
   }
+}
+
+const MONTHS = [
+  ["Jan", "January"],
+  ["Feb", "February"],
+  ["Mar", "March"],
+  ["Apr", "April"],
+  ["May", "May"],
+  ["Jun", "June"],
+  ["Jul", "July"],
+  ["Aug", "August"],
+  ["Sep", "September"],
+  ["Oct", "October"],
+  ["Nov", "November"],
+  ["Dec", "December"]
+] as const;
+
+const MONTH_NAME_PATTERN =
+  "Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?";
+
+type MonthNameStyle = {
+  index: number;
+  length: "short" | "long" | "sept";
+  case: "lower" | "upper" | "title";
+};
+
+function parseMonthName(source: string): MonthNameStyle | undefined {
+  const normalized = source.toLowerCase();
+  for (let index = 0; index < MONTHS.length; index += 1) {
+    const [shortName, longName] = MONTHS[index];
+    const lowerShortName = shortName.toLowerCase();
+    const lowerLongName = longName.toLowerCase();
+    if (shortName === "Sep" && normalized === "sept") {
+      return { index, length: "sept", case: getMonthNameCase(source) };
+    }
+
+    if (normalized === lowerShortName) {
+      return { index, length: "short", case: getMonthNameCase(source) };
+    }
+
+    if (normalized === lowerLongName) {
+      return { index, length: "long", case: getMonthNameCase(source) };
+    }
+  }
+
+  return undefined;
+}
+
+function formatMonthName(monthIndex: number, style: MonthNameStyle): string {
+  const monthName = style.length === "sept" && monthIndex === 8 ? "Sept" : MONTHS[monthIndex][style.length === "long" ? 1 : 0];
+  if (style.case === "lower") {
+    return monthName.toLowerCase();
+  }
+
+  if (style.case === "upper") {
+    return monthName.toUpperCase();
+  }
+
+  return monthName;
+}
+
+function getMonthNameCase(source: string): MonthNameStyle["case"] {
+  if (source === source.toLowerCase()) {
+    return "lower";
+  }
+
+  if (source === source.toUpperCase()) {
+    return "upper";
+  }
+
+  return "title";
+}
+
+function createMonthNameDayIncrementer(
+  monthText: string,
+  dayText: string,
+  format: (date: Date, month: MonthNameStyle) => string
+): Incrementer | undefined {
+  const month = parseMonthName(monthText);
+  const day = Number(dayText);
+  if (!month || !isValidMonthDay(month.index + 1, day)) {
+    return undefined;
+  }
+
+  const start = new Date(Date.UTC(1970, month.index, day));
+  return (index: number) => format(addDays(start, index), month);
+}
+
+function createMonthNameDateIncrementer(
+  monthText: string,
+  dayText: string,
+  yearText: string,
+  format: (date: Date, month: MonthNameStyle) => string
+): Incrementer | undefined {
+  const month = parseMonthName(monthText);
+  const day = Number(dayText);
+  const year = Number(yearText);
+  if (!month || !isValidDate(year, month.index + 1, day)) {
+    return undefined;
+  }
+
+  const start = new Date(Date.UTC(year, month.index, day));
+  return (index: number) => format(addDays(start, index), month);
+}
+
+function joinThree(first: string, firstSeparator: string, second: string, secondSeparator: string, third: string): string {
+  return `${first}${firstSeparator}${second}${secondSeparator}${third}`;
 }
 
 function addDays(date: Date, amount: number): Date {
