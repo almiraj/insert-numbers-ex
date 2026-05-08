@@ -72,8 +72,8 @@ export default class DatetimeNamedIncrementerFactory {
     const monthFirst = new RegExp(`^(${MONTH_NAME_PATTERN})([\\/-]|\\s+)(\\d{1,2})$`, "u").exec(source);
     if (monthFirst) {
       const [, monthText, separatorText, dayText] = monthFirst;
-      return createNamedMonthDayIncrementer(monthText, dayText, (date, month) =>
-        [formatMonthName(date.getUTCMonth(), month), String(date.getUTCDate())].join(separatorText)
+      return createNamedMonthDayIncrementer(monthText, dayText, (date, month, dayPaddingWidth) =>
+        [formatMonthName(date.getUTCMonth(), month), formatDay(date, dayPaddingWidth)].join(separatorText)
       );
     }
 
@@ -83,8 +83,8 @@ export default class DatetimeNamedIncrementerFactory {
     }
 
     const [, dayText, separatorText, monthText] = dayFirst;
-    return createNamedMonthDayIncrementer(monthText, dayText, (date, month) =>
-      [String(date.getUTCDate()), formatMonthName(date.getUTCMonth(), month)].join(separatorText)
+    return createNamedMonthDayIncrementer(monthText, dayText, (date, month, dayPaddingWidth) =>
+      [formatDay(date, dayPaddingWidth), formatMonthName(date.getUTCMonth(), month)].join(separatorText)
     );
   }
 
@@ -98,11 +98,11 @@ export default class DatetimeNamedIncrementerFactory {
     );
     if (monthDayYear) {
       const [, monthText, firstSeparator, dayText, secondSeparator, yearText] = monthDayYear;
-      return createNamedMonthDateIncrementer(monthText, dayText, yearText, (date, month) =>
+      return createNamedMonthDateIncrementer(monthText, dayText, yearText, (date, month, dayPaddingWidth) =>
         joinThree(
           formatMonthName(date.getUTCMonth(), month),
           firstSeparator,
-          String(date.getUTCDate()),
+          formatDay(date, dayPaddingWidth),
           secondSeparator,
           String(date.getUTCFullYear()).padStart(yearText.length, "0")
         )
@@ -114,9 +114,9 @@ export default class DatetimeNamedIncrementerFactory {
     );
     if (dayMonthYear) {
       const [, dayText, firstSeparator, monthText, secondSeparator, yearText] = dayMonthYear;
-      return createNamedMonthDateIncrementer(monthText, dayText, yearText, (date, month) =>
+      return createNamedMonthDateIncrementer(monthText, dayText, yearText, (date, month, dayPaddingWidth) =>
         joinThree(
-          String(date.getUTCDate()),
+          formatDay(date, dayPaddingWidth),
           firstSeparator,
           formatMonthName(date.getUTCMonth(), month),
           secondSeparator,
@@ -133,13 +133,13 @@ export default class DatetimeNamedIncrementerFactory {
     }
 
     const [, yearText, firstSeparator, monthText, secondSeparator, dayText] = yearMonthDay;
-    return createNamedMonthDateIncrementer(monthText, dayText, yearText, (date, month) =>
+    return createNamedMonthDateIncrementer(monthText, dayText, yearText, (date, month, dayPaddingWidth) =>
       joinThree(
         String(date.getUTCFullYear()).padStart(yearText.length, "0"),
         firstSeparator,
         formatMonthName(date.getUTCMonth(), month),
         secondSeparator,
-        String(date.getUTCDate())
+        formatDay(date, dayPaddingWidth)
       )
     );
   }
@@ -220,7 +220,7 @@ function getMonthNameCase(source: string): MonthNameStyle["case"] {
 function createNamedMonthDayIncrementer(
   monthText: string,
   dayText: string,
-  format: (date: Date, month: MonthNameStyle) => string
+  format: (date: Date, month: MonthNameStyle, dayPaddingWidth: number) => string
 ): Incrementer | undefined {
   const month = parseMonthName(monthText);
   const day = Number(dayText);
@@ -229,14 +229,15 @@ function createNamedMonthDayIncrementer(
   }
 
   const start = new Date(Date.UTC(1970, month.index, day));
-  return (index: number) => format(addDays(start, index), month);
+  const dayPaddingWidth = getExplicitPaddingWidth(dayText);
+  return (index: number) => format(addDays(start, index), month, dayPaddingWidth);
 }
 
 function createNamedMonthDateIncrementer(
   monthText: string,
   dayText: string,
   yearText: string,
-  format: (date: Date, month: MonthNameStyle) => string
+  format: (date: Date, month: MonthNameStyle, dayPaddingWidth: number) => string
 ): Incrementer | undefined {
   const month = parseMonthName(monthText);
   const day = Number(dayText);
@@ -246,7 +247,16 @@ function createNamedMonthDateIncrementer(
   }
 
   const start = new Date(Date.UTC(year, month.index, day));
-  return (index: number) => format(addDays(start, index), month);
+  const dayPaddingWidth = getExplicitPaddingWidth(dayText);
+  return (index: number) => format(addDays(start, index), month, dayPaddingWidth);
+}
+
+function formatDay(date: Date, paddingWidth: number): string {
+  return String(date.getUTCDate()).padStart(paddingWidth, "0");
+}
+
+function getExplicitPaddingWidth(source: string): number {
+  return source.length > 1 && source.startsWith("0") ? source.length : 1;
 }
 
 function addDays(date: Date, amount: number): Date {

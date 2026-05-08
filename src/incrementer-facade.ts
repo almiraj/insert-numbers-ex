@@ -24,6 +24,7 @@ export function detectIncrementer(source: string): Incrementer | undefined {
     IncrementerFactory.createHexadecimalIncrementer(source) ??
     IncrementerFactory.createCharacterIncrementer(source) ??
     IncrementerFactory.createJapaneseNumericIncrementer(source) ??
+    IncrementerFactory.createSpacePaddedNumericIncrementer(source) ??
     IncrementerFactory.createNumericIncrementer(source) ??
     IncrementerFactory.createOnlyRepeatFormatter(source)
   );

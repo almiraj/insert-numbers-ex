@@ -18,10 +18,10 @@ describe("README examples", () => {
     ["0", ["0", "1", "2", "3"]],
     ["1", ["1", "2", "3", "4"]],
     ["01", ["01", "02", "03", "04"]],
+    [" 8", [" 8", " 9", "10", "11"]],
     ["0x0e", ["0x0e", "0x0f", "0x10", "0x11"]],
-    ["1_", ["1_", "2_", "3_", "4_"]],
     ["[1]", ["[1]", "[2]", "[3]", "[4]"]],
-    ["a", ["a", "b", "c", "d"]],
+    ["(a)", ["(a)", "(b)", "(c)", "(d)"]],
     ["Ⅰ", ["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"]],
     ["１", ["１", "２", "３", "４"]],
     ["①", ["①", "②", "③", "④"]],
@@ -67,6 +67,9 @@ describe("numberic", () => {
   const examples = [
     ["8", ["8", "9", "10", "11"]],
     ["08", ["08", "09", "10", "11"]],
+    [" 8", [" 8", " 9", "10", "11"]],
+    [" 98", [" 98", " 99", "100", "101"]],
+    ["[ 8]", ["[ 8]", "[ 9]", "[10]", "[11]"]],
     ["98", ["98", "99", "100", "101"]],
     ["098", ["098", "099", "100", "101"]]
   ];
@@ -198,6 +201,18 @@ describe("parsing month names as date (for Sept)", () => {
   for (const [source, expected] of examples) {
     it(`formats ${source}`, () => {
       assert.deepEqual(incrementFor(source, 14), expected);
+    });
+  }
+});
+
+describe("parsing month names as date (for Zero Padding)", () => {
+  const examples = [
+    ["Nov 09", ["Nov 09", "Nov 10", "Nov 11", "Nov 12", "Nov 13", "Nov 14", "Nov 15", "Nov 16", "Nov 17", "Nov 18", "Nov 19", "Nov 20", "Nov 21", "Nov 22", "Nov 23", "Nov 24", "Nov 25", "Nov 26", "Nov 27", "Nov 28", "Nov 29", "Nov 30", "Dec 01"]]
+  ];
+
+  for (const [source, expected] of examples) {
+    it(`formats ${source}`, () => {
+      assert.deepEqual(incrementFor(source, expected.length), expected);
     });
   }
 });

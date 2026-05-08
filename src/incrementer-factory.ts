@@ -51,6 +51,30 @@ export default class IncrementerFactory {
   }
 
   /**
+   * Creates a space-padded numeric incrementer.
+   * Supports patterns like ` 8` and `[ 8]`.
+   */
+  static createSpacePaddedNumericIncrementer(source: string): Incrementer | undefined {
+    const match = /^(.*?)( +)(\d+)(.*)$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, prefix, padding, digits, suffix] = match;
+    if (/\d/u.test(prefix)) {
+      return undefined;
+    }
+
+    const start = Number.parseInt(digits, 10);
+    const width = padding.length + digits.length;
+
+    return (index: number) => {
+      const formatted = String(start + index).padStart(width, " ");
+      return `${prefix}${formatted}${suffix}`;
+    };
+  }
+
+  /**
    * Creates a Japanese numeric incrementer.
    * Supports patterns like `０`, `１`, `【１】`, `１０` and `０１`.
    * Returns `undefined` when `0-9` appears before supported `０-９`.
