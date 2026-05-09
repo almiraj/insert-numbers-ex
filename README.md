@@ -58,18 +58,18 @@ This project is a small tribute to that work.
 ```
 
 ```text
-[1]
-[2]
-[3]
-[4]
-...
-```
-
-```text
 0x0e
 0x0f
 0x10
 0x11
+...
+```
+
+```text
+[1]
+[2]
+[3]
+[4]
 ...
 ```
 
