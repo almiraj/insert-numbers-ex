@@ -6,10 +6,7 @@
 
 An extension to insert increasing numbers.
 
-<video controls width="960">
-  <source src="./media/demo.mp4" type="video/mp4">
-  <a href="./media/demo.mp4">View demo video</a>
-</video>
+![Demo](./images/demo.gif)
 
 ## Usage
 

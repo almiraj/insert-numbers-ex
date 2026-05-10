@@ -4,6 +4,7 @@
   "description": "An extension to insert increasing numbers.",
   "version": "1.0.0",
   "publisher": "almiraj",
+  "icon": "images/icon.png",
   "license": "MIT",
   "repository": {
     "type": "git",
