@@ -1,8 +1,8 @@
 {
   "name": "insert-numbers-ex",
   "displayName": "Insert Numbers Ex",
-  "description": "An extension to insert increasing numbers.",
-  "version": "1.0.3",
+  "description": "Insert increasing numbers",
+  "version": "1.0.4",
   "publisher": "almiraj",
   "icon": "images/icon.png",
   "license": "MIT",

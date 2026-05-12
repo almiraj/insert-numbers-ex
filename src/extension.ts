@@ -16,8 +16,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const inputBox = vscode.window.createInputBox();
       inputBox.title = "Insert Numbers Ex";
-      inputBox.prompt = "Support: 0, 1, 01, [1], a, ①, Nov 30, 2026-12-31 23:59:58";
-      inputBox.placeholder = "0, 1, 01, [1], a, ①, Nov 30, 2026-12-31 23:59:58";
+      inputBox.prompt = "Support: 0, 1, 01, [ 1], a, ①, Nov 30, 2026-12-31 23:59:58";
+      inputBox.placeholder = "0, 1, 01, [ 1], a, ①, Nov 30, 2026-12-31 23:59:58";
       inputBox.ignoreFocusOut = true;
 
       const clearPreview = () => {

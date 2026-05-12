@@ -21,7 +21,7 @@ export function detectIncrementer(source: string): Incrementer | undefined {
     DatetimeNamedIncrementerFactory.createNamedMonthDayIncrementer(source) ??
     DatetimeNamedIncrementerFactory.createNamedMonthYearIncrementer(source) ??
     DatetimeNamedIncrementerFactory.createNamedMonthIncrementer(source) ??
-    IncrementerFactory.createHexadecimalIncrementer(source) ??
+    IncrementerFactory.createPrefixedRadixIncrementer(source) ??
     IncrementerFactory.createCharacterIncrementer(source) ??
     IncrementerFactory.createJapaneseNumericIncrementer(source) ??
     IncrementerFactory.createSpacePaddedNumericIncrementer(source) ??
