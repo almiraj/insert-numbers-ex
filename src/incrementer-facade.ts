@@ -3,12 +3,15 @@ import type { Incrementer } from "./incrementer";
 import IncrementerFactory from "./incrementer-factory";
 import DatetimeIncrementerFactory from "./incrementer-factory-datetime";
 import DatetimeNamedIncrementerFactory from "./incrementer-factory-datetime-named";
+import { ProgrammaticIncrementerFactory } from "./incrementer-factory-programmatic";
 
 /**
  * Detects an incrementer from the source text.
  */
 export function detectIncrementer(source: string): Incrementer | undefined {
   return (
+    ProgrammaticIncrementerFactory.createCyclingNumericIncrementer(source) ??
+    ProgrammaticIncrementerFactory.createRepeatedNumericIncrementer(source) ??
     DatetimeIncrementerFactory.createFullDateTimeIncrementer(source) ??
     DatetimeIncrementerFactory.createYmdIncrementer(source) ??
     DatetimeIncrementerFactory.createMdydIncrementer(source) ??
