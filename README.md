@@ -17,6 +17,12 @@ An extension to insert increasing numbers.
 
 No settings required. No more `settings.json`.
 
+## Caution
+
+VS Code's Command Palette may ignore leading spaces in the input.
+
+If you need space padding, include another visible character in the pattern, such as `[ 1]`.
+
 ## Thanks
 
 Thanks to Asuka for the original [Insert Numbers](https://marketplace.visualstudio.com/items?itemName=Asuka.insertnumbers) extension, which I have long loved.
@@ -50,18 +56,18 @@ This project is a small tribute to that work.
 ```
 
 ```text
- 8
- 9
-10
-11
+ 8    [ 8]
+ 9    [ 9]
+10    [10]
+11    [11]
 ...
 ```
 
 ```text
-1.    1_    [1]
-2.    2_    [2]
-3.    3_    [3]
-4.    4_    [4]
+1.    1_    (1)
+2.    2_    (2)
+3.    3_    (3)
+4.    4_    (4)
 ...
 ```
 
