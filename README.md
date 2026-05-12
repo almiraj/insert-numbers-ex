@@ -74,18 +74,26 @@ This project is a small tribute to that work.
 ```
 
 ```text
-a    A    あ    ア    ｱ
-b    B    い    イ    ｲ
-c    C    う    ウ    ｳ
-d    D    え    エ    ｴ
+１    一    ①    ٠    ०    Ⅰ
+２    二    ②    ١    १    Ⅱ
+３    三    ③    ٢    २    Ⅲ
+４    四    ④    ٣    ३    Ⅳ
 ...
 ```
 
 ```text
-１    ①    Ⅰ
-２    ②    Ⅱ
-３    ③    Ⅲ
-４    ④    Ⅳ
+a    A    α    а    å
+b    B    β    б    ä
+c    C    γ    в    ö
+d    D    δ    г    a
+...
+```
+
+```text
+あ    ア    ｱ    가
+い    イ    ｲ    나
+う    ウ    ｳ    다
+え    エ    ｴ    라
 ...
 ```
 
