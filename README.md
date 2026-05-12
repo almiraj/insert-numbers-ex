@@ -66,10 +66,10 @@ This project is a small tribute to that work.
 ```
 
 ```text
-0x0e
-0x0f
-0x10
-0x11
+0b01     0o06    0x0e    0X08
+0b10     0o07    0x0f    0X09
+0b11     0o10    0x10    0X0A
+0b100    0o11    0x11    0X0B
 ...
 ```
 
