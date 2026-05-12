@@ -306,22 +306,78 @@ describe("avoid parsing as date", () => {
   }
 });
 
+describe("validates Unicode-ordered characterSet sequences", () => {
+  const unicodeOrderedStartChars = [
+    "①",
+    "Ⅰ",
+    "a",
+    "A",
+    "ａ",
+    "Ａ",
+    "あ",
+    "ア",
+    "α",
+    "Α",
+    "가",
+    "٠",
+    "۰",
+    "०",
+    "০"
+  ];
+
+  for (const startChar of unicodeOrderedStartChars) {
+    it(`keeps sequence from ${startChar} in Unicode order`, () => {
+      const incrementer = detectIncrementer(startChar);
+      assert.ok(incrementer, `Expected "${startChar}" to be supported`);
+
+      const codePoints = [incrementer(0).codePointAt(0)];
+      let looped = false;
+      for (let index = 1; index <= 100; index += 1) {
+        const char = incrementer(index);
+        if (char === startChar) {
+          looped = true;
+          break;
+        }
+
+        codePoints.push(char.codePointAt(0));
+      }
+
+      assert.ok(looped, `Expected "${startChar}" sequence to loop within 100 increments`);
+      for (let index = 1; index < codePoints.length; index += 1) {
+        assert.ok(codePoints[index - 1] < codePoints[index]);
+      }
+    });
+  }
+});
+
 describe("characterSets loops", () => {
   const examples = [
+    ["㉙", ["㉙", "㉚", "①", "②"]],
+    ["Ⅺ", ["Ⅺ", "Ⅻ", "Ⅰ", "Ⅱ"]],
+    ["九", ["九", "十", "一", "二"]],
     ["y", ["y", "z", "a", "b"]],
     ["Y", ["Y", "Z", "A", "B"]],
     ["ｙ", ["ｙ", "ｚ", "ａ", "ｂ"]],
     ["Ｙ", ["Ｙ", "Ｚ", "Ａ", "Ｂ"]],
-    ["㉙", ["㉙", "㉚", "①", "②"]],
-    ["Ⅺ", ["Ⅺ", "Ⅻ", "Ⅰ", "Ⅱ"]],
     ["を", ["を", "ん", "あ", "い"]],
     ["ヲ", ["ヲ", "ン", "ア", "イ"]],
-    ["ｦ", ["ｦ", "ﾝ", "ｱ", "ｲ"]]
+    ["ｦ", ["ｦ", "ﾝ", "ｱ", "ｲ"]],
+    ["ω", ["ω", "α", "β", "γ"]],
+    ["Ω", ["Ω", "Α", "Β", "Γ"]],
+    ["카", ["카", "타", "파", "하", "가"]],
+    ["٨", ["٨", "٩", "٠", "١"]],
+    ["۸", ["۸", "۹", "۰", "۱"]],
+    ["८", ["८", "९", "०", "१"]],
+    ["৮", ["৮", "৯", "০", "১"]],
+    ["щ", ["щ", "ь", "ю", "я", "а"]],
+    ["Щ", ["Щ", "Ь", "Ю", "Я", "А"]],
+    ["å", ["å", "ä", "ö", "a"]],
+    ["Å", ["Å", "Ä", "Ö", "A"]]
   ];
 
   for (const [source, expected] of examples) {
     it(`loops ${source}`, () => {
-      assert.deepEqual(incrementFor(source, 4), expected);
+      assert.deepEqual(incrementFor(source, expected.length), expected);
     });
   }
 });
