@@ -6,7 +6,7 @@ import type { Incrementer } from "./incrementer";
 export class ProgrammaticIncrementerFactory {
   /**
    * Creates a repeated cycling numeric incrementer.
-   * Supports patterns like `1*2~5`, which yields `1`, `1`, `2`, `2`, ...
+   * Supports patterns like `1*2~3`, which yields `1`, `1`, `2`, `2`, `3`, `3`, `1`, ...
    * Supports patterns like `[ 9]*2~[10]`, which yields `[ 9]`, `[ 9]`, `[10]`, `[10]`, `[ 9]`, ...
    */
   static createRepeatedCyclingNumericIncrementer(source: string): Incrementer | undefined {
@@ -16,34 +16,32 @@ export class ProgrammaticIncrementerFactory {
     }
 
     const [, startSource, repeatSource, endSource] = match;
+    if (/[~*]/u.test(repeatSource + endSource)) {
+      return undefined;
+    }
 
     const matchStartParts = /^(.*?)( *)(\d+)(.*)$/u.exec(startSource);
     if (!matchStartParts) {
       return undefined;
     }
-    const matchRepeatParts = /^(.*?)( *)(\d+)(.*)$/u.exec(repeatSource);
-    if (!matchRepeatParts) {
-      return undefined;
-    }
-    const matchEndParts = /^(.*?)( *)(\d+)(.*)$/u.exec(endSource);
-    if (!matchEndParts) {
-      return undefined;
-    }
-
     const [, prefix, padding, digits, suffix] = matchStartParts;
-    const [, repeatPrefix, , repeatDigits, repeatSuffix] = matchRepeatParts;
-    const [, endPrefix, , endDigits, endSuffix] = matchEndParts;
-    if (/[~*]/u.test(prefix + suffix + repeatPrefix + repeatSuffix + endPrefix + endSuffix)) {
+    if (/[~*]/u.test(prefix + suffix)) {
       return undefined;
     }
 
-    const repeat = Number.parseInt(repeatDigits, 10);
-    if (repeat <= 0) {
+    const matchRepeatDigits = /\d+/u.exec(repeatSource);
+    const repeat = matchRepeatDigits ? Number.parseInt(matchRepeatDigits[0], 10) : undefined;
+    if (repeat === undefined || repeat <= 0) {
+      return undefined;
+    }
+
+    const matchEndDigits = /\d+/u.exec(endSource);
+    const end = matchEndDigits ? Number.parseInt(matchEndDigits[0], 10) : undefined;
+    if (end === undefined) {
       return undefined;
     }
 
     const start = Number.parseInt(digits, 10);
-    const end = Number.parseInt(endDigits, 10);
     const plusMinus = start <= end ? 1 : -1;
     const rangeLength = Math.abs(end - start) + 1;
     const format = createNumberFormatter(prefix, padding, digits, suffix);
@@ -66,24 +64,26 @@ export class ProgrammaticIncrementerFactory {
     }
 
     const [, startSource, endSource] = match;
+    if (/[~*]/u.test(endSource)) {
+      return undefined;
+    }
 
     const matchStartParts = /^(.*?)( *)(\d+)(.*)$/u.exec(startSource);
     if (!matchStartParts) {
       return undefined;
     }
-    const matchEndParts = /^(.*?)( *)(\d+)(.*)$/u.exec(endSource);
-    if (!matchEndParts) {
+    const [, prefix, padding, digits, suffix] = matchStartParts;
+    if (/[~*]/u.test(prefix + suffix)) {
       return undefined;
     }
 
-    const [, prefix, padding, digits, suffix] = matchStartParts;
-    const [, endPrefix, , endDigits, endSuffix] = matchEndParts;
-    if (/[~*]/u.test(prefix + suffix + endPrefix + endSuffix)) {
+    const matchEndDigits = /\d+/u.exec(endSource);
+    const end = matchEndDigits ? Number.parseInt(matchEndDigits[0], 10) : undefined;
+    if (end === undefined) {
       return undefined;
     }
 
     const start = Number.parseInt(digits, 10);
-    const end = Number.parseInt(endDigits, 10);
     const plusMinus = start <= end ? 1 : -1;
     const rangeLength = Math.abs(end - start) + 1;
     const format = createNumberFormatter(prefix, padding, digits, suffix);
@@ -105,24 +105,21 @@ export class ProgrammaticIncrementerFactory {
     }
 
     const [, startSource, repeatSource] = match;
+    if (/[~*]/u.test(repeatSource)) {
+      return undefined;
+    }
 
     const matchStartParts = /^(.*?)( *)(\d+)(.*)$/u.exec(startSource);
     if (!matchStartParts) {
       return undefined;
     }
-    const matchRepeatParts = /^(.*?)( *)(\d+)(.*)$/u.exec(repeatSource);
-    if (!matchRepeatParts) {
-      return undefined;
-    }
-
     const [, prefix, padding, digits, suffix] = matchStartParts;
-    const [, repeatPrefix, , repeatDigits, repeatSuffix] = matchRepeatParts;
-    if (/[~*]/u.test(prefix + suffix + repeatPrefix + repeatSuffix)) {
+    if (/[~*]/u.test(prefix + suffix)) {
       return undefined;
     }
-
-    const repeat = Number.parseInt(repeatDigits, 10);
-    if (repeat <= 0) {
+    const matchRepeatDigits = /\d+/u.exec(repeatSource);
+    const repeat = matchRepeatDigits ? Number.parseInt(matchRepeatDigits[0], 10) : undefined;
+    if (repeat === undefined || repeat <= 0) {
       return undefined;
     }
 
