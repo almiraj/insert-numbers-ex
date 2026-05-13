@@ -31,8 +31,11 @@ export class ProgrammaticIncrementerFactory {
     }
 
     const [, prefix, padding, digits, suffix] = matchStartParts;
-    const [, , , repeatDigits, ] = matchRepeatParts;
-    const [, , , endDigits, ] = matchEndParts;
+    const [, repeatPrefix, , repeatDigits, repeatSuffix] = matchRepeatParts;
+    const [, endPrefix, , endDigits, endSuffix] = matchEndParts;
+    if (/[~*]/u.test(prefix + suffix + repeatPrefix + repeatSuffix + endPrefix + endSuffix)) {
+      return undefined;
+    }
 
     const repeat = Number.parseInt(repeatDigits, 10);
     if (repeat <= 0) {
@@ -74,7 +77,10 @@ export class ProgrammaticIncrementerFactory {
     }
 
     const [, prefix, padding, digits, suffix] = matchStartParts;
-    const [, , , endDigits, ] = matchEndParts;
+    const [, endPrefix, , endDigits, endSuffix] = matchEndParts;
+    if (/[~*]/u.test(prefix + suffix + endPrefix + endSuffix)) {
+      return undefined;
+    }
 
     const start = Number.parseInt(digits, 10);
     const end = Number.parseInt(endDigits, 10);
@@ -110,7 +116,10 @@ export class ProgrammaticIncrementerFactory {
     }
 
     const [, prefix, padding, digits, suffix] = matchStartParts;
-    const [, , , repeatDigits, ] = matchRepeatParts;
+    const [, repeatPrefix, , repeatDigits, repeatSuffix] = matchRepeatParts;
+    if (/[~*]/u.test(prefix + suffix + repeatPrefix + repeatSuffix)) {
+      return undefined;
+    }
 
     const repeat = Number.parseInt(repeatDigits, 10);
     if (repeat <= 0) {

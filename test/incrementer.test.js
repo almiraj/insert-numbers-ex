@@ -442,6 +442,9 @@ describe("programmatic numeric", () => {
     ["1~0", ["1", "0", "1", "0", "1", "0"]],
     ["2~3", ["2", "3", "2", "3", "2", "3"]],
     ["3~1", ["3", "2", "1", "3", "2", "1"]],
+    [" 1~3", [" 1", " 2", " 3", " 1"]],
+    [" 8~3", [" 8", " 9", "10", " 8"]],
+    ["1~ 3", ["1", "2", "3", "1"]],
     ["01~3", ["01", "02", "03", "01", "02", "03", "01", "02", "03"]],
     ["01~5", ["01", "02", "03", "04", "05", "01", "02", "03", "04", "05", "01"]],
     ["00~3", ["00", "01", "02", "03", "00", "01", "02", "03", "00"]],
@@ -479,6 +482,22 @@ describe("programmatic numeric", () => {
   for (const [source, expected] of fallbackExamples) {
     it(`falls back to numeric incrementing for ${source}`, () => {
       assert.deepEqual(incrementFor(source, expected.length), expected);
+    });
+  }
+});
+
+describe("avoid parsing as programmatic numeric", () => {
+  const examples = [
+    ["1~3*2", ["1~3*2", "2~3*2", "3~3*2", "4~3*2"]],
+    ["1~3~2", ["1~3~2", "2~3~2", "3~3~2", "4~3~2"]],
+    ["1*3*2", ["1*3*2", "2*3*2", "3*3*2", "4*3*2"]],
+    ["1*3~2~1", ["1*3~2~1", "2*3~2~1", "3*3~2~1", "4*3~2~1"]],
+    ["1*3~2*1", ["1*3~2*1", "2*3~2*1", "3*3~2*1", "4*3~2*1"]]
+  ];
+
+  for (const [source, expected] of examples) {
+    it(`formats ${source}`, () => {
+      assert.deepEqual(incrementFor(source, 4), expected);
     });
   }
 });
