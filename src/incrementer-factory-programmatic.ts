@@ -7,6 +7,7 @@ export class ProgrammaticIncrementerFactory {
   /**
    * Creates a cycling numeric incrementer.
    * Supports patterns like `1~3`, which yields `1`, `2`, `3`, `1`, ...
+   * Supports patterns like `[ 8]~10`, which yields `[ 8]`, `[ 9]`, `[10]`, `[ 8]`, ...
    * Supports descending ranges like `3~1`, which yields `3`, `2`, `1`, `3`, ...
    */
   static createCyclingNumericIncrementer(source: string): Incrementer | undefined {
@@ -16,15 +17,21 @@ export class ProgrammaticIncrementerFactory {
     }
 
     const [, startSource, endSource] = match;
-    const startParts = parseFormattedNumber(startSource);
-    const endParts = parseFormattedNumber(endSource);
-    if (!startParts || !endParts) {
+
+    const matchStartParts = /^(.*?)( *)(\d+)(.*)$/u.exec(startSource);
+    if (!matchStartParts) {
+      return undefined;
+    }
+    const matchEndParts = /^(.*?)( *)(\d+)(.*)$/u.exec(endSource);
+    if (!matchEndParts) {
       return undefined;
     }
 
-    const { prefix, padding, digits, suffix } = startParts;
+    const [, prefix, padding, digits, suffix] = matchStartParts;
+    const [, , , endDigits, ] = matchEndParts;
+
     const start = Number.parseInt(digits, 10);
-    const end = Number.parseInt(endParts.digits, 10);
+    const end = Number.parseInt(endDigits, 10);
     const plusMinus = start <= end ? 1 : -1;
     const rangeLength = Math.abs(end - start) + 1;
     const format = createNumberFormatter(prefix, padding, digits, suffix);
@@ -37,6 +44,7 @@ export class ProgrammaticIncrementerFactory {
   /**
    * Creates a repeated numeric incrementer.
    * Supports patterns like `1*3`, which yields `1`, `1`, `1`, `2`, ...
+   * Supports patterns like `[ 9]*2`, which yields `[ 9]`, `[ 9]`, `[10]`, `[10]`, `[11]`, `[11]`, `[ 9]`, ...
    */
   static createRepeatedNumericIncrementer(source: string): Incrementer | undefined {
     const match = /^(.*?)\*(.+)$/u.exec(source);
@@ -45,14 +53,20 @@ export class ProgrammaticIncrementerFactory {
     }
 
     const [, startSource, repeatSource] = match;
-    const startParts = parseFormattedNumber(startSource);
-    const repeatParts = parseFormattedNumber(repeatSource);
-    if (!startParts || !repeatParts) {
+
+    const matchStartParts = /^(.*?)( *)(\d+)(.*)$/u.exec(startSource);
+    if (!matchStartParts) {
+      return undefined;
+    }
+    const matchRepeatParts = /^(.*?)( *)(\d+)(.*)$/u.exec(repeatSource);
+    if (!matchRepeatParts) {
       return undefined;
     }
 
-    const { prefix, padding, digits, suffix } = startParts;
-    const repeat = Number.parseInt(repeatParts.digits, 10);
+    const [, prefix, padding, digits, suffix] = matchStartParts;
+    const [, , , repeatDigits, ] = matchRepeatParts;
+
+    const repeat = Number.parseInt(repeatDigits, 10);
     if (repeat <= 0) {
       return undefined;
     }
@@ -65,23 +79,6 @@ export class ProgrammaticIncrementerFactory {
       return format(start + (Math.floor(index / repeat) % cycleLength));
     };
   }
-}
-
-type FormattedNumberParts = {
-  prefix: string;
-  padding: string;
-  digits: string;
-  suffix: string;
-};
-
-function parseFormattedNumber(source: string): FormattedNumberParts | undefined {
-  const match = /^(.*?)( *)(\d+)(.*)$/u.exec(source);
-  if (!match) {
-    return undefined;
-  }
-
-  const [, prefix, padding, digits, suffix] = match;
-  return { prefix, padding, digits, suffix };
 }
 
 function createNumberFormatter(prefix: string, padding: string, digits: string, suffix: string): (value: number) => string {
