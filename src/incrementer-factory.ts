@@ -173,21 +173,11 @@ export default class IncrementerFactory {
       "αβγδεζηθικλμνξοπρστυφχψω",
       "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ",
       "가나다라마바사아자차카타파하",
-      "۰۱۲۳۴۵۶۷۸۹",
-      "०१२३४५६७८९",
-      "০১২৩৪৫৬৭৮৯",
       "абвгґдеєжзиіїйклмнопрстуфхцчшщьюя",
       "АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ",
       "abcdefghijklmnopqrstuvwxyzåäö",
       "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
     ];
-    const numericCharacterSets = new Set([
-      createSequentialCodePointString(0x0660, 10),
-      createSequentialCodePointString(0x06f0, 10),
-      createSequentialCodePointString(0x0966, 10),
-      createSequentialCodePointString(0x09e6, 10)
-    ]);
-
     let sourceOffset = 0;
     for (const char of [...source]) {
       if (/[\d０-９]/u.test(char)) {
@@ -195,10 +185,6 @@ export default class IncrementerFactory {
       }
 
       for (const charMemberSet of charMemberSets) {
-        if (numericCharacterSets.has(charMemberSet)) {
-          continue;
-        }
-
         const charMembers = [...charMemberSet];
         const startIdx = charMembers.indexOf(char);
         if (startIdx >= 0) {
@@ -224,8 +210,4 @@ export default class IncrementerFactory {
 
     return (_index: number) => source;
   }
-}
-
-function createSequentialCodePointString(start: number, length: number): string {
-  return Array.from({ length }, (_value, index) => String.fromCodePoint(start + index)).join("");
 }
