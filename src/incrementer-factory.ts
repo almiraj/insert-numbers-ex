@@ -119,6 +119,41 @@ export default class IncrementerFactory {
   }
 
   /**
+   * Creates a non-ASCII decimal digit incrementer.
+   * Supports Arabic-Indic, Extended Arabic-Indic, Devanagari, and Bengali digits.
+   */
+  static createNonAsciiDecimalIncrementer(source: string): Incrementer | undefined {
+    const digitSets = ["٠١٢٣٤٥٦٧٨٩", "۰۱۲۳۴۵۶۷۸۹", "०१२३४५६७८९", "০১২৩৪৫৬৭৮৯"];
+    const match = /^([^٠-٩۰-۹०-९০-৯]*)([٠-٩۰-۹०-९০-৯]+)(.*)$/u.exec(source);
+    if (!match) {
+      return undefined;
+    }
+
+    const [, prefix, sourceDigits, suffix] = match;
+    if (/[\d０-９]/u.test(prefix)) {
+      return undefined;
+    }
+
+    const digitSet = digitSets.find(candidate => [...sourceDigits].every(digit => candidate.includes(digit)));
+    if (digitSet === undefined) {
+      return undefined;
+    }
+
+    const digitMembers = [...digitSet];
+    const digits = [...sourceDigits].map(digit => String(digitMembers.indexOf(digit))).join("");
+    const start = Number.parseInt(digits, 10);
+    const width = digits.length;
+    const padded = digits.startsWith("0") && width > 1;
+
+    return (index: number) => {
+      const value = String(start + index);
+      const formatted = padded ? value.padStart(width, "0") : value;
+      const localizedFormatted = formatted.replace(/\d/g, digit => digitMembers[Number(digit)]);
+      return `${prefix}${localizedFormatted}${suffix}`;
+    };
+  }
+
+  /**
    * Creates a character incrementer.
    * Supports patterns like ①, Ⅰ, `(a)` and `ア`.
    * Returns `undefined` when `0-9` or `０-９` appears before a supported character.
@@ -138,7 +173,6 @@ export default class IncrementerFactory {
       "αβγδεζηθικλμνξοπρστυφχψω",
       "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ",
       "가나다라마바사아자차카타파하",
-      "٠١٢٣٤٥٦٧٨٩",
       "۰۱۲۳۴۵۶۷۸۹",
       "०१२३४५६७८९",
       "০১২৩৪৫৬৭৮৯",
@@ -147,6 +181,12 @@ export default class IncrementerFactory {
       "abcdefghijklmnopqrstuvwxyzåäö",
       "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
     ];
+    const numericCharacterSets = new Set([
+      createSequentialCodePointString(0x0660, 10),
+      createSequentialCodePointString(0x06f0, 10),
+      createSequentialCodePointString(0x0966, 10),
+      createSequentialCodePointString(0x09e6, 10)
+    ]);
 
     let sourceOffset = 0;
     for (const char of [...source]) {
@@ -155,6 +195,10 @@ export default class IncrementerFactory {
       }
 
       for (const charMemberSet of charMemberSets) {
+        if (numericCharacterSets.has(charMemberSet)) {
+          continue;
+        }
+
         const charMembers = [...charMemberSet];
         const startIdx = charMembers.indexOf(char);
         if (startIdx >= 0) {
@@ -180,4 +224,8 @@ export default class IncrementerFactory {
 
     return (_index: number) => source;
   }
+}
+
+function createSequentialCodePointString(start: number, length: number): string {
+  return Array.from({ length }, (_value, index) => String.fromCodePoint(start + index)).join("");
 }

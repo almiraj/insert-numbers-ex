@@ -28,6 +28,7 @@ export function detectIncrementer(source: string): Incrementer | undefined {
     IncrementerFactory.createPrefixedRadixIncrementer(source) ??
     IncrementerFactory.createCharacterIncrementer(source) ??
     IncrementerFactory.createJapaneseNumericIncrementer(source) ??
+    IncrementerFactory.createNonAsciiDecimalIncrementer(source) ??
     IncrementerFactory.createSpacePaddedNumericIncrementer(source) ??
     IncrementerFactory.createNumericIncrementer(source) ??
     IncrementerFactory.createOnlyRepeatFormatter(source)
