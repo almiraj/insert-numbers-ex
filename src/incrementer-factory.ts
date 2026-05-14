@@ -123,42 +123,40 @@ export default class IncrementerFactory {
    * Supports Arabic-Indic, Extended Arabic-Indic, Devanagari, and Bengali digits.
    */
   static createNonAsciiDecimalIncrementer(source: string): Incrementer | undefined {
-    const digitSets = ["０１２３４５６７８９", "٠١٢٣٤٥٦٧٨٩", "۰۱۲۳۴۵۶۷۸۹", "०१२३४५६७८९", "০১২৩৪৫৬৭৮৯"];
+    const noAsciiDigitCharSets = ["０１２３４５６７８９", "٠١٢٣٤٥٦٧٨٩", "۰۱۲۳۴۵۶۷۸۹", "०१२३४५६७८९", "০১২৩৪৫৬৭৮৯"];
     let sourceOffset = 0;
     for (const char of [...source]) {
       if (/\d/u.test(char)) {
         return undefined;
       }
 
-      for (const digitSet of digitSets) {
-        if (!digitSet.includes(char)) {
+      for (const nonAsciiDigitCharSet of noAsciiDigitCharSets) {
+        if (!nonAsciiDigitCharSet.includes(char)) {
           continue;
         }
 
-        let digitsEndOffset = sourceOffset;
-        let sourceDigits = "";
-        for (const digit of [...source.slice(sourceOffset)]) {
-          if (!digitSet.includes(digit)) {
+        let joinedNonAsciiDigitsChars = "";
+        for (const nonAsciiDigitsChar of [...source.slice(sourceOffset)]) {
+          if (!nonAsciiDigitCharSet.includes(nonAsciiDigitsChar)) {
             break;
           }
 
-          sourceDigits += digit;
-          digitsEndOffset += digit.length;
+          joinedNonAsciiDigitsChars += nonAsciiDigitsChar;
         }
 
         const prefix = source.slice(0, sourceOffset);
-        const suffix = source.slice(digitsEndOffset);
-        const digitMembers = [...digitSet];
-        const digits = [...sourceDigits].map(digit => String(digitMembers.indexOf(digit))).join("");
-        const start = Number.parseInt(digits, 10);
-        const width = digits.length;
-        const padded = digits.startsWith("0") && width > 1;
+        const suffix = source.slice(sourceOffset + joinedNonAsciiDigitsChars.length);
+        const nonAsciiDigitCharMembers = [...nonAsciiDigitCharSet];
+        const rawDigits = [...joinedNonAsciiDigitsChars].map(c => String(nonAsciiDigitCharMembers.indexOf(c))).join("");
+        const start = Number.parseInt(rawDigits, 10);
+        const width = rawDigits.length;
+        const padded = rawDigits.startsWith("0") && width > 1;
 
         return (index: number) => {
           const value = String(start + index);
           const formatted = padded ? value.padStart(width, "0") : value;
-          const localizedFormatted = formatted.replace(/\d/g, digit => digitMembers[Number(digit)]);
-          return `${prefix}${localizedFormatted}${suffix}`;
+          const nonAscii = formatted.replace(/\d/g, digit => nonAsciiDigitCharMembers[Number(digit)]);
+          return `${prefix}${nonAscii}${suffix}`;
         };
       }
 
