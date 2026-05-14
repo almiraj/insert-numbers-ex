@@ -126,9 +126,6 @@ export default class IncrementerFactory {
     const noAsciiDigitCharSets = ["０１２３４５６７８９", "٠١٢٣٤٥٦٧٨٩", "۰۱۲۳۴۵۶۷۸۹", "०१२३४५६७८९", "০১২৩৪৫৬৭৮৯"];
     let sourceOffset = 0;
     for (const char of [...source]) {
-      if (/\d/u.test(char)) {
-        return undefined;
-      }
 
       for (const nonAsciiDigitCharSet of noAsciiDigitCharSets) {
         if (!nonAsciiDigitCharSet.includes(char)) {
@@ -146,8 +143,8 @@ export default class IncrementerFactory {
 
         const prefix = source.slice(0, sourceOffset);
         const suffix = source.slice(sourceOffset + joinedNonAsciiDigitsChars.length);
-        const nonAsciiDigitCharMembers = [...nonAsciiDigitCharSet];
-        const rawDigits = [...joinedNonAsciiDigitsChars].map(c => String(nonAsciiDigitCharMembers.indexOf(c))).join("");
+        const nonAsciiMembers = [...nonAsciiDigitCharSet];
+        const rawDigits = [...joinedNonAsciiDigitsChars].map(c => String(nonAsciiMembers.indexOf(c))).join("");
         const start = Number.parseInt(rawDigits, 10);
         const width = rawDigits.length;
         const padded = rawDigits.startsWith("0") && width > 1;
@@ -155,7 +152,7 @@ export default class IncrementerFactory {
         return (index: number) => {
           const value = String(start + index);
           const formatted = padded ? value.padStart(width, "0") : value;
-          const nonAscii = formatted.replace(/\d/g, digit => nonAsciiDigitCharMembers[Number(digit)]);
+          const nonAscii = formatted.replace(/\d/g, digit => nonAsciiMembers[Number(digit)]);
           return `${prefix}${nonAscii}${suffix}`;
         };
       }
@@ -193,9 +190,6 @@ export default class IncrementerFactory {
     ];
     let sourceOffset = 0;
     for (const char of [...source]) {
-      if (/\d/u.test(char)) {
-        return undefined;
-      }
 
       for (const charMemberSet of charMemberSets) {
         const charMembers = [...charMemberSet];
