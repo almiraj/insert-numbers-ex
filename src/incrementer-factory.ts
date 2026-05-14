@@ -88,42 +88,18 @@ export default class IncrementerFactory {
   }
 
   /**
-   * Creates a Japanese numeric incrementer.
-   * Supports patterns like `０`, `１`, `【１】`, `１０` and `０１`.
-   * Returns `undefined` when `0-9` appears before supported `０-９`.
-   */
-  static createJapaneseNumericIncrementer(source: string): Incrementer | undefined {
-    const japaneseNumericDigits = "０１２３４５６７８９";
-
-    const match = /^([^０-９]*)([０-９]+)(.*)$/u.exec(source);
-    if (!match) {
-      return undefined;
-    }
-
-    const [, prefix, jaDigits, suffix] = match;
-    if (/\d/u.test(prefix)) {
-      return undefined;
-    }
-
-    const digits = jaDigits.normalize("NFKC");
-    const start = Number.parseInt(digits, 10);
-    const width = digits.length;
-    const padded = digits.startsWith("0") && width > 1;
-
-    return (index: number) => {
-      const value = String(start + index);
-      const formatted = padded ? value.padStart(width, "0") : value;
-      const jaFormatted = formatted.replace(/\d/g, digit => japaneseNumericDigits[Number(digit)]);
-      return `${prefix}${jaFormatted}${suffix}`;
-    };
-  }
-
-  /**
    * Creates a non-ASCII decimal digit incrementer.
    * Supports Arabic-Indic, Extended Arabic-Indic, Devanagari, and Bengali digits.
    */
   static createNonAsciiDecimalIncrementer(source: string): Incrementer | undefined {
-    const noAsciiDigitCharSets = ["０１２３４５６７８９", "٠١٢٣٤٥٦٧٨٩", "۰۱۲۳۴۵۶۷۸۹", "०१२३४५६७८९", "০১২৩৪৫৬৭৮৯"];
+    const noAsciiDigitCharSets = [
+      "０１２３４５６７８９",
+      "٠١٢٣٤٥٦٧٨٩",
+      "۰۱۲۳۴۵۶۷۸۹",
+      "०१२३४५६७८९",
+      "০১২৩৪৫৬৭৮৯"
+    ];
+
     let sourceOffset = 0;
     for (const char of [...source]) {
 
@@ -188,6 +164,7 @@ export default class IncrementerFactory {
       "abcdefghijklmnopqrstuvwxyzåäö",
       "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
     ];
+
     let sourceOffset = 0;
     for (const char of [...source]) {
 
