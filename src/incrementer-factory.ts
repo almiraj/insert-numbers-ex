@@ -123,34 +123,49 @@ export default class IncrementerFactory {
    * Supports Arabic-Indic, Extended Arabic-Indic, Devanagari, and Bengali digits.
    */
   static createNonAsciiDecimalIncrementer(source: string): Incrementer | undefined {
-    const digitSets = ["٠١٢٣٤٥٦٧٨٩", "۰۱۲۳۴۵۶۷۸۹", "०१२३४५६७८९", "০১২৩৪৫৬৭৮৯"];
-    const match = /^([^٠-٩۰-۹०-९০-৯]*)([٠-٩۰-۹०-९০-৯]+)(.*)$/u.exec(source);
-    if (!match) {
-      return undefined;
+    const digitSets = ["０１２３４５６７８９", "٠١٢٣٤٥٦٧٨٩", "۰۱۲۳۴۵۶۷۸۹", "०१२३४५६७८९", "০১২৩৪৫৬৭৮৯"];
+    let sourceOffset = 0;
+    for (const char of [...source]) {
+      if (/\d/u.test(char)) {
+        return undefined;
+      }
+
+      for (const digitSet of digitSets) {
+        if (!digitSet.includes(char)) {
+          continue;
+        }
+
+        let digitsEndOffset = sourceOffset;
+        let sourceDigits = "";
+        for (const digit of [...source.slice(sourceOffset)]) {
+          if (!digitSet.includes(digit)) {
+            break;
+          }
+
+          sourceDigits += digit;
+          digitsEndOffset += digit.length;
+        }
+
+        const prefix = source.slice(0, sourceOffset);
+        const suffix = source.slice(digitsEndOffset);
+        const digitMembers = [...digitSet];
+        const digits = [...sourceDigits].map(digit => String(digitMembers.indexOf(digit))).join("");
+        const start = Number.parseInt(digits, 10);
+        const width = digits.length;
+        const padded = digits.startsWith("0") && width > 1;
+
+        return (index: number) => {
+          const value = String(start + index);
+          const formatted = padded ? value.padStart(width, "0") : value;
+          const localizedFormatted = formatted.replace(/\d/g, digit => digitMembers[Number(digit)]);
+          return `${prefix}${localizedFormatted}${suffix}`;
+        };
+      }
+
+      sourceOffset += char.length;
     }
 
-    const [, prefix, sourceDigits, suffix] = match;
-    if (/[\d０-９]/u.test(prefix)) {
-      return undefined;
-    }
-
-    const digitSet = digitSets.find(candidate => [...sourceDigits].every(digit => candidate.includes(digit)));
-    if (digitSet === undefined) {
-      return undefined;
-    }
-
-    const digitMembers = [...digitSet];
-    const digits = [...sourceDigits].map(digit => String(digitMembers.indexOf(digit))).join("");
-    const start = Number.parseInt(digits, 10);
-    const width = digits.length;
-    const padded = digits.startsWith("0") && width > 1;
-
-    return (index: number) => {
-      const value = String(start + index);
-      const formatted = padded ? value.padStart(width, "0") : value;
-      const localizedFormatted = formatted.replace(/\d/g, digit => digitMembers[Number(digit)]);
-      return `${prefix}${localizedFormatted}${suffix}`;
-    };
+    return undefined;
   }
 
   /**
@@ -180,7 +195,7 @@ export default class IncrementerFactory {
     ];
     let sourceOffset = 0;
     for (const char of [...source]) {
-      if (/[\d０-９]/u.test(char)) {
+      if (/\d/u.test(char)) {
         return undefined;
       }
 
