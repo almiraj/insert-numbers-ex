@@ -92,7 +92,7 @@ export default class IncrementerFactory {
    * Supports Arabic-Indic, Extended Arabic-Indic, Devanagari, and Bengali digits.
    */
   static createNonAsciiDecimalIncrementer(source: string): Incrementer | undefined {
-    const noAsciiDigitCharSets = [
+    const nonAsciiDigitCharSets = [
       "０１２３４５６７８９",
       "٠١٢٣٤٥٦٧٨٩",
       "۰۱۲۳۴۵۶۷۸۹",
@@ -103,24 +103,23 @@ export default class IncrementerFactory {
     let sourceOffset = 0;
     for (const char of [...source]) {
 
-      for (const nonAsciiDigitCharSet of noAsciiDigitCharSets) {
+      for (const nonAsciiDigitCharSet of nonAsciiDigitCharSets) {
         if (!nonAsciiDigitCharSet.includes(char)) {
           continue;
         }
 
-        let joinedNonAsciiDigitsChars = "";
-        for (const nonAsciiDigitsChar of [...source.slice(sourceOffset)]) {
-          if (!nonAsciiDigitCharSet.includes(nonAsciiDigitsChar)) {
+        let joinedNonAsciiDigitChars = "";
+        for (const nonAsciiDigitChar of [...source.slice(sourceOffset)]) {
+          if (!nonAsciiDigitCharSet.includes(nonAsciiDigitChar)) {
             break;
           }
-
-          joinedNonAsciiDigitsChars += nonAsciiDigitsChar;
+          joinedNonAsciiDigitChars += nonAsciiDigitChar;
         }
 
         const prefix = source.slice(0, sourceOffset);
-        const suffix = source.slice(sourceOffset + joinedNonAsciiDigitsChars.length);
+        const suffix = source.slice(sourceOffset + joinedNonAsciiDigitChars.length);
         const nonAsciiMembers = [...nonAsciiDigitCharSet];
-        const rawDigits = [...joinedNonAsciiDigitsChars].map(c => String(nonAsciiMembers.indexOf(c))).join("");
+        const rawDigits = [...joinedNonAsciiDigitChars].map(c => String(nonAsciiMembers.indexOf(c))).join("");
         const start = Number.parseInt(rawDigits, 10);
         const width = rawDigits.length;
         const padded = rawDigits.startsWith("0") && width > 1;
