@@ -88,34 +88,54 @@ export default class IncrementerFactory {
   }
 
   /**
-   * Creates a Japanese numeric incrementer.
-   * Supports patterns like `０`, `１`, `【１】`, `１０` and `０１`.
-   * Returns `undefined` when `0-9` appears before supported `０-９`.
+   * Creates a non-ASCII decimal digit incrementer.
+   * Supports Arabic-Indic, Extended Arabic-Indic, Devanagari, and Bengali digits.
    */
-  static createJapaneseNumericIncrementer(source: string): Incrementer | undefined {
-    const japaneseNumericDigits = "０１２３４５６７８９";
+  static createNonAsciiDecimalIncrementer(source: string): Incrementer | undefined {
+    const nonAsciiDigitCharSets = [
+      "０１２３４５６７８９",
+      "٠١٢٣٤٥٦٧٨٩",
+      "۰۱۲۳۴۵۶۷۸۹",
+      "०१२३४५६७८९",
+      "০১২৩৪৫৬৭৮৯"
+    ];
 
-    const match = /^([^０-９]*)([０-９]+)(.*)$/u.exec(source);
-    if (!match) {
-      return undefined;
+    let sourceOffset = 0;
+    for (const char of [...source]) {
+
+      for (const nonAsciiDigitCharSet of nonAsciiDigitCharSets) {
+        if (!nonAsciiDigitCharSet.includes(char)) {
+          continue;
+        }
+
+        let joinedNonAsciiDigitChars = "";
+        for (const nonAsciiDigitChar of [...source.slice(sourceOffset)]) {
+          if (!nonAsciiDigitCharSet.includes(nonAsciiDigitChar)) {
+            break;
+          }
+          joinedNonAsciiDigitChars += nonAsciiDigitChar;
+        }
+
+        const prefix = source.slice(0, sourceOffset);
+        const suffix = source.slice(sourceOffset + joinedNonAsciiDigitChars.length);
+        const nonAsciiMembers = [...nonAsciiDigitCharSet];
+        const rawDigits = [...joinedNonAsciiDigitChars].map(c => String(nonAsciiMembers.indexOf(c))).join("");
+        const start = Number.parseInt(rawDigits, 10);
+        const width = rawDigits.length;
+        const padded = rawDigits.startsWith("0") && width > 1;
+
+        return (index: number) => {
+          const value = String(start + index);
+          const formatted = padded ? value.padStart(width, "0") : value;
+          const nonAscii = formatted.replace(/\d/g, digit => nonAsciiMembers[Number(digit)]);
+          return `${prefix}${nonAscii}${suffix}`;
+        };
+      }
+
+      sourceOffset += char.length;
     }
 
-    const [, prefix, jaDigits, suffix] = match;
-    if (/\d/u.test(prefix)) {
-      return undefined;
-    }
-
-    const digits = jaDigits.normalize("NFKC");
-    const start = Number.parseInt(digits, 10);
-    const width = digits.length;
-    const padded = digits.startsWith("0") && width > 1;
-
-    return (index: number) => {
-      const value = String(start + index);
-      const formatted = padded ? value.padStart(width, "0") : value;
-      const jaFormatted = formatted.replace(/\d/g, digit => japaneseNumericDigits[Number(digit)]);
-      return `${prefix}${jaFormatted}${suffix}`;
-    };
+    return undefined;
   }
 
   /**
@@ -130,29 +150,22 @@ export default class IncrementerFactory {
       "一二三四五六七八九十",
       "abcdefghijklmnopqrstuvwxyz",
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+      "αβγδεζηθικλμνξοπρστυφχψω",
+      "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ",
+      "абвгґдеєжзиіїйклмнопрстуфхцчшщьюя",
+      "АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ",
+      "abcdefghijklmnopqrstuvwxyzåäö",
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ",
       "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ",
       "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ",
       "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
       "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
       "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ",
-      "αβγδεζηθικλμνξοπρστυφχψω",
-      "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ",
-      "가나다라마바사아자차카타파하",
-      "٠١٢٣٤٥٦٧٨٩",
-      "۰۱۲۳۴۵۶۷۸۹",
-      "०१२३४५६७८९",
-      "০১২৩৪৫৬৭৮৯",
-      "абвгґдеєжзиіїйклмнопрстуфхцчшщьюя",
-      "АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ",
-      "abcdefghijklmnopqrstuvwxyzåäö",
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
+      "가나다라마바사아자차카타파하"
     ];
 
     let sourceOffset = 0;
     for (const char of [...source]) {
-      if (/[\d０-９]/u.test(char)) {
-        return undefined;
-      }
 
       for (const charMemberSet of charMemberSets) {
         const charMembers = [...charMemberSet];
